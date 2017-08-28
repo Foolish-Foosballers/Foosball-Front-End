@@ -5,6 +5,8 @@
 # Description
 This project is a barebones Predix web application built from the [PredixDev/predix-webapp-starter](https://github.com/PredixDev/predix-webapp-starter). This project is intended to work alongside the [PredixDev/predix-webapp-starter](https://github.com/PredixDev/predix-webapp-starter) but not replace. You should only use this application if you want a clean, simple Predix web application. If you intend to use UAA or Timeseries I recommend using [this](https://github.com/PredixDev/predix-webapp-starter) starter application.
 
+> I recommend starting with this application, customizing it to your needs, and then use specific pieces of the [PredixDev/predix-webapp-starter](https://github.com/PredixDev/predix-webapp-starter) that you need for your project.
+
 # Installation
 ### Get the source code
 Make a directory for your project.  Clone or download and extract the starter in that directory.

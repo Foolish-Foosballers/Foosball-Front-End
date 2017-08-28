@@ -1,6 +1,6 @@
 # (Simple) Predix Web App Starter
 
-_*Warning:*_ This application was not built but the Predix UI team. Use at your own risk!
+**Warning:** This application was not built by the Predix UI team. Use at your own risk!
 
 # Description
 This project is a barebones Predix web application, built from the [PredixDev/predix-webapp-starter](https://github.com/PredixDev/predix-webapp-starter). This project is intended to work alongside the [PredixDev/predix-webapp-starter](https://github.com/PredixDev/predix-webapp-starter) but not replace. You should only use this application if you want a clean, simple Predix web application. If you intend to use UAA or Timeseries I recommend using [this](https://github.com/PredixDev/predix-webapp-starter) starter application.

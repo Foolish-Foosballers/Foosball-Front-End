@@ -1,23 +1,18 @@
 {
-  "name": "predix-webapp-starter",
-  "version": "1.0.47",
+  "name": "predix-webapp-starter--simple",
+  "version": "1.0.0",
   "private": true,
   "engines": {
     "node": ">=0.10.0"
   },
   "author": {
-    "name": "Predix Adoption",
-    "email": "predix.adoption@ge.com"
+    "name": "Brett Oberg",
+    "email": "brett.oberg@ge.com"
   },
   "scripts": {
     "start": "node server/app.js",
     "test": "node_modules/mocha/bin/mocha test/server"
   },
-  "keywords": [
-    "predix-ui-seed",
-    "predix-seed",
-    "predix-webapp-starter"
-  ],
   "devDependencies": {
     "chai": "^3.5.0",
     "gulp": "^3.9.0",

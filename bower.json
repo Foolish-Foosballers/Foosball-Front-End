@@ -26,7 +26,8 @@
     "px-mixins-design": "^1.0.1",
     "px-viewport-design": "^1.0.2",
     "px-box-sizing-design": "^1.0.2",
-    "px-clearfix-design": "^1.0.1"
+    "px-clearfix-design": "^1.0.1",
+    "px-headings-design": "^1.0.3"
   },
   "resolutions": {
     "webcomponentsjs": "^0.7.24"

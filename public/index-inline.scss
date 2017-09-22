@@ -23,10 +23,12 @@ html {
   min-height: 100%;
 }
 body {
+  margin-top: calculateRem(0px);
+  margin-right: calculateRem(0px);
   margin-bottom: calculateRem(60px);
+  margin-left: calculateRem(0px);
 }
 html,body {
-  margin: 0;
   background: $page-background-color;
   font-family: $predix-font-family;
   font-weight: normal;

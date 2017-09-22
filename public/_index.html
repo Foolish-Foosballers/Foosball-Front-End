@@ -7,8 +7,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" type="image/png" href="./docs/images/favicon.png">
 
+  <!-- Predix theme -->
   <link rel="import" href="bower_components/px-theme/px-theme-styles.html">
   <style include="px-theme-styles" is="custom-style"></style>
+
+  <!-- Inline CSS for splash -->
+  <link rel="import" href="index-inline-styles.html">
+  <style include="index-inline-styles" is="custom-style"></style>
 
   <!-- Dark Theme: Uncomment the <link> and <style> lines immediately below to use the theme -->
   <!--
@@ -23,9 +28,16 @@
 
 </head>
 
-<body>
+<body class="loading">
 
+  <!-- #splash div outside of Polymer/imports and styled by the main page. First paint is instant, even on polyfilled browsers. -->
+  <div id="splash"></div>
+
+  <!-- Application -->
   <seed-app></seed-app>
+
+  <!-- Inline script to load app and remove splash screen. Gulp will inline this script via the compile.index task -->
+  <script src="_index-inline-loading-script.js" inline></script>
 
 </body>
 </html>

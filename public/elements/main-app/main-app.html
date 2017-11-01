@@ -1,0 +1,103 @@
+<!-- Polymer -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<!-- Routing -->
+<link rel="import" href="../../bower_components/app-route/app-location.html"/>
+<link rel="import" href="../../bower_components/app-route/app-route.html"/>
+
+ <!-- Local Imports -->
+ <link id="dashboard-app-import" rel="import" href="./dashboard/dashboard-app.html" async>
+ <link id="game-app-import" rel="import" href="./game/game-app.html" async>
+ <link id="error-app-import" rel="import" href="./error/error-app.html" async>
+
+<dom-module id="main-app">
+  <template>
+    <div id="main-app">
+        <!-- App location -->
+        <app-location route="{{route}}" use-hash-as-path></app-location>
+
+        <!-- Local routing -->
+        <app-route route="{{route}}" pattern="/:app" data="{{routeData}}" tail="{{subRoute}}"></app-route>
+
+        <!-- STATE: route.path = /#/dashboard/ -->
+        <template is="dom-if" if="[[_isDashboard(routeData.app)]]">
+          <dashboard-app route="{{subRoute}}"></dashboard-app>
+        </template>
+
+        <!-- STATE: route.path = /#/game/ -->
+        <template is="dom-if" if="[[_isGame(routeData.app)]]">
+          <game-app route="{{subRoute}}"></game-app>
+        </template>
+
+        <!-- STATE: route.path != /#/runtime || route.path != /#/admin -->
+        <template is="dom-if" if="[[_isError(routeData.app)]]">
+          <error-app route="{{subRoute}}"></error-app>
+        </template>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'main-app',
+      properties: {
+        // Route that is being sent in through the URL
+        route: { type: String }
+      },
+
+      /**
+       * Lifecycle method when the element is attached to the screen. 
+       */
+      attached: function() {
+        this._loadDefaultRoute();
+      },
+
+      /**
+       * When the application is loaded with an empty route, default the user to the dashboard app
+       */
+      _loadDefaultRoute: function() {
+        if(!this.route.path) {
+          this.set('route.path', '/dashboard');
+        }
+      },
+
+      /**
+       * Check to see if the provided string === 'dashboard'
+       * 
+       * @param app is the string being validated
+       * @return true if app === 'game'; otherwise, return false
+       */
+      _isDashboard: function(app) {
+        if(app === 'dashboard') {
+          return true
+        } else {
+          return false;
+        }
+      },
+      /**
+       * Check to see if the provided string === 'game'
+       * 
+       * @param app is the string being validated
+       * @return true if app === 'game'; otherwise, return false
+       */
+      _isGame: function(app) {
+        if(app === 'game') {
+          return true
+        } else {
+          return false;
+        }
+      },
+      /**
+       * Check to see if the provided string != 'dashboard' && != 'game'
+       * 
+       * @param app is the string being validated
+       * @return true if app != 'dashboard' && app != 'game' ; otherwise, return false
+       */
+       _isError: function(app) {
+        if(app != 'dashboard' && app != 'game') {
+          return true
+        } else {
+          return false;
+        }
+      }
+    });
+  </script>
+</dom-module>

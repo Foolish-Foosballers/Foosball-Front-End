@@ -1,14 +1,73 @@
 <!-- Polymer -->
 <link rel="import" href="../../../bower_components/polymer/polymer.html">
 
+<!-- Predix UI Elements -->
+<link rel="import" href="../../../bower_components/px-theme/px-theme-styles.html">
+<link rel="import" href="../../../bower_components/px-progress-bar/px-progress-bar.html">
+
+<!-- Custom views -->
+<link rel="import" href="./views/lobby-view.html">
+<link rel="import" href="./views/scoreboard-view.html">
+
 <dom-module id="game-app">
   <template>
-    <h1>Game</h1>
+    <!-- Global Predix theme -->
+    <style include="px-theme-styles" is="custom-style"></style>
+
+    <!-- STATE: Page is loading -->
+    <template is="dom-if" if="{{pageIsLoading}}">
+      <px-progress-bar id="progress-bar" infinite></px-progress-bar>
+    </template>
+
+    <!-- STATE: subroute = /#/game/lobby -->
+    <template is="dom-if" if="[[_isLobbyView(route.path)]]">
+      <lobby-view></lobby-view>
+    </template>
+
+    <!-- STATE: subroute = /#/game/scoreboard -->
+    <template is="dom-if" if="[[_isScoreboardView(route.path)]]">
+      <scoreboard-view></scoreboard-view>
+    </template>
+
+    <!-- STATE: route.path != /#/lobby/ && route.path != /#/scoreboard/ load the lobby view -->
+    <template is="dom-if" if="[[_isInvalidView(route.path)]]"></template>
   </template>
   <script>
     Polymer({
       is: 'game-app',
-      properties: { },
+
+      properties: {
+        pageIsLoading: { value: Boolean, value: true }
+      },
+
+      _isLobbyView: function(view) {
+        if (view == "/lobby") {
+          this.set("pageIsLoading", false);
+          return true;
+        }
+        return false;
+      },
+
+      _isScoreboardView: function(view) {
+        if (view == "/scoreboard") {
+          this.set("pageIsLoading", false);
+          return true;
+        }
+        return false;        
+      },
+
+      _isInvalidView: function(view) {
+        if (view != "/scoreboard" && view != "/lobby" ) {
+          this._updatePath("/lobby");
+          this.set("pageIsLoading", false);
+          return true;
+        }
+        return false;       
+      },
+
+      _updatePath: function(path) {
+        this.set("route.path", path);
+      }
     });
   </script>
 </dom-module>

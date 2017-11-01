@@ -1,13 +1,18 @@
 {
   "entrypoint": "public/index.html",
-  "shell": "public/elements/seed-app/seed-app.html",
+  "shell": "public/elements/main-app/main-app.html",
   "fragments": [
-    "public/elements/views/template-view.html"
+    "public/elements/main-app/dashboard/dashboard-app.html",
+    "public/elements/main-app/error/error-app.html",
+    "public/elements/main-app/game/views/lobby-view.html",
+    "public/elements/main-app/game/views/scoreboard-view.html",
+    "public/elements/main-app/game/game-app.html",
+    "public/elements/main-app/main-app.html"
   ],
   "sources": [
     "public/elements/**/*",
     "public/index*",
-    "public/seed*"
+    "public/app*"
   ],
   "builds": [
     {

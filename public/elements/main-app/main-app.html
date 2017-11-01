@@ -20,17 +20,17 @@
         <app-route route="{{route}}" pattern="/:app" data="{{routeData}}" tail="{{subRoute}}"></app-route>
 
         <!-- STATE: route.path = /#/dashboard/ -->
-        <template is="dom-if" if="[[_isDashboard(routeData.app)]]">
+        <template is="dom-if" if="[[_isDashboardApp(routeData.app)]]">
           <dashboard-app route="{{subRoute}}"></dashboard-app>
         </template>
 
         <!-- STATE: route.path = /#/game/ -->
-        <template is="dom-if" if="[[_isGame(routeData.app)]]">
+        <template is="dom-if" if="[[_isGameApp(routeData.app)]]">
           <game-app route="{{subRoute}}"></game-app>
         </template>
 
-        <!-- STATE: route.path != /#/runtime || route.path != /#/admin -->
-        <template is="dom-if" if="[[_isError(routeData.app)]]">
+        <!-- STATE: route.path != /#/game/ || route.path != /#/dashboard/ -->
+        <template is="dom-if" if="[[_isErrorApp(routeData.app)]]">
           <error-app route="{{subRoute}}"></error-app>
         </template>
     </div>
@@ -65,7 +65,7 @@
        * @param app is the string being validated
        * @return true if app === 'game'; otherwise, return false
        */
-      _isDashboard: function(app) {
+      _isDashboardApp: function(app) {
         if(app === 'dashboard') {
           return true
         } else {
@@ -78,7 +78,7 @@
        * @param app is the string being validated
        * @return true if app === 'game'; otherwise, return false
        */
-      _isGame: function(app) {
+      _isGameApp: function(app) {
         if(app === 'game') {
           return true
         } else {
@@ -91,7 +91,7 @@
        * @param app is the string being validated
        * @return true if app != 'dashboard' && app != 'game' ; otherwise, return false
        */
-       _isError: function(app) {
+       _isErrorApp: function(app) {
         if(app != 'dashboard' && app != 'game') {
           return true
         } else {

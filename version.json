@@ -1,7 +1,7 @@
 {
-  "name": "(Simple) Predix WebApp Starter",
+  "name": "Foosball-Front-End",
   "version": "1.0.0",
   "private": true,
   "dependencies": { },
-  "author": "212460520"
+  "author": "Brett Oberg"
 }

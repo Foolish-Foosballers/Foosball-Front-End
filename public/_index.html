@@ -24,7 +24,7 @@
   <!-- Async HTML Imports do not block rending. Benefit of keeping it declarative
       (instead of dynamically loading it later in JS) is that the parser can go to
       town pre-fetching resources, etc. -->
-  <link id="main-element-import" rel="import" href="/elements/seed-app/seed-app.html" async>
+  <link id="main-element-import" rel="import" href="/elements/main-app/main-app.html" async>
 
 </head>
 
@@ -34,7 +34,7 @@
   <div id="splash"></div>
 
   <!-- Application -->
-  <seed-app></seed-app>
+  <main-app></main-app>
 
   <!-- Inline script to load app and remove splash screen. Gulp will inline this script via the compile.index task -->
   <script src="_index-inline-loading-script.js" inline></script>

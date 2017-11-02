@@ -66,10 +66,12 @@ app.use(function(err, req, res, next) {
 	Message Queue
 *****************************************************************************/
 app.use([apiRoute + 'queue/initializeQueue'], function() {
-	var url = process.env.VCAP_SERVICES['rabbitmq-36'][0].credentials.url;
-	console.log(url);
+	var vcap_services = JSON.parse(process.env.VCAP_SERVICES);
+	console.log(vcap_services);
+	var uri = vcap_services["rabbitmq-36"][0].credentials.uri;
+	console.log(uri);
 
-	amqp.connect(url, function(err, conn) {
+	amqp.connect(uri, function(err, conn) {
 		console.log(err);
 		console.log(conn);
 		// conn.createChannel(function(err, ch) {
@@ -80,6 +82,17 @@ app.use([apiRoute + 'queue/initializeQueue'], function() {
 		// 		ch.sendToQueue(q, Buffer.from(msg));
 		// 	}, 2000);
 		// });
+	});
+});
+
+app.use([apiRoute + 'queue/closeQueue'], function() {
+	var vcap_services = JSON.parse(process.env.VCAP_SERVICES);
+	console.log(vcap_services);
+	var uri = vcap_services["rabbitmq-36"][0].credentials.uri;
+	console.log(uri);
+
+	amqp.connect(uri, function(err, conn) {
+		conn.close();
 	});
 });
 

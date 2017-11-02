@@ -9,10 +9,16 @@
 <link rel="import" href="./views/lobby-view.html">
 <link rel="import" href="./views/scoreboard-view.html">
 
+<!-- Local theming -->
+<link rel="import" href="./game-app-styles.html">
+
 <dom-module id="game-app">
   <template>
     <!-- Global Predix theme -->
     <style include="px-theme-styles" is="custom-style"></style>
+
+    <!-- Local theme -->
+    <style include="game-app-styles" is="custom-style"></style>
 
     <!-- STATE: Page is loading -->
     <template is="dom-if" if="{{pageIsLoading}}">
@@ -37,6 +43,7 @@
       is: 'game-app',
 
       properties: {
+        // State of the page
         pageIsLoading: { value: Boolean, value: true }
       },
 

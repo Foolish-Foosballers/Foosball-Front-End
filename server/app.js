@@ -10,6 +10,8 @@ var express = require('express');
 var path = require('path');
 var app = express();
 var httpServer = http.createServer(app);
+var amqp = require('amqplib/callback_api');
+var apiRoute = '/api/v1/';
 
 /**********************************************************************
        SETTING UP EXRESS SERVER
@@ -58,6 +60,27 @@ app.use(function(err, req, res, next) {
 			error: {}
 		});
 	}
+});
+
+/****************************************************************************
+	Message Queue
+*****************************************************************************/
+app.use([apiRoute + 'queue/initializeQueue'], function() {
+	var url = process.env.VCAP_SERVICES['rabbitmq-36'][0].credentials.url;
+	console.log(url);
+
+	amqp.connect(url, function(err, conn) {
+		console.log(err);
+		console.log(conn);
+		// conn.createChannel(function(err, ch) {
+		// 	var q = "first_q";
+		// 	var msg = "Hello world!";
+		// 	ch.assertQueue(q, {durable: false});
+		// 	setInterval(function() {
+		// 		ch.sendToQueue(q, Buffer.from(msg));
+		// 	}, 2000);
+		// });
+	});
 });
 
 httpServer.listen(process.env.VCAP_APP_PORT || 5000, function () {

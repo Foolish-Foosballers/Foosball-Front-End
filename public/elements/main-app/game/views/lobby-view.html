@@ -1,9 +1,31 @@
 <!-- Polymer -->
 <link rel="import" href="../../../../bower_components/polymer/polymer.html">
 
+<!-- Local theming -->
+<link rel="import" href="../game-app-styles.html">
+<link rel="import" href="./styles/lobby-view-styles.html">
+
 <dom-module id="lobby-view">
   <template>
-    <h1>Lobby</h1>
+    <!-- Local theme -->
+    <style include="game-app-styles" is="custom-style"></style>
+    <style include="lobby-view-styles" is="custom-style"></style>
+
+    <div role="header">
+      <h1>Welcome</h1>
+      <p>Please enter your names.</p>
+    </div>
+
+    <div role="container">
+      <div id="container--black-side">
+        <label for="black-side" >Black Side</label>
+        <input id="black-side" placeholder="Name, email, or SSO" class="text-input input--regular" type="text">
+      </div>
+      <div id="container--yellow-side">
+        <label for="yellow-side" >Yellow Side</label>
+        <input id="yellow-side" placeholder="Name, email, or SSO" class="text-input input--regular" type="text">
+      </div>
+    </div>
   </template>
   <script>
     Polymer({

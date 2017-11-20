@@ -1,6 +1,9 @@
 <!-- Polymer -->
 <link rel="import" href="../../../../bower_components/polymer/polymer.html">
 
+<!-- PX components -->
+<link rel="import" href="../../../../bower_components/px-dropdown/px-dropdown.html">
+
 <!-- Local theming -->
 <link rel="import" href="../game-app-styles.html">
 <link rel="import" href="./styles/lobby-view-styles.html">
@@ -13,24 +16,168 @@
 
     <div role="header">
       <h1>Welcome</h1>
-      <p>Please enter your names.</p>
     </div>
 
     <div role="container">
-      <div id="container--black-side">
-        <label for="black-side" >Black Side</label>
-        <input id="black-side" placeholder="Name, email, or SSO" class="text-input input--regular" type="text">
-      </div>
-      <div id="container--yellow-side">
-        <label for="yellow-side" >Yellow Side</label>
-        <input id="yellow-side" placeholder="Name, email, or SSO" class="text-input input--regular" type="text">
-      </div>
+      <!-- Number of players -->
+      <label for="number-of-players-dropdown">How many players in your game?</label>
+      <px-dropdown id="number-of-players-dropdown" items="{{numberOfPlayerItems}}" sort-mode="key" button-style="default" display-value="Select" selected="{{selectedNumberOfPlayersIndex}}" disable-clear></px-dropdown>
+
+      <!-- Type of game -->
+      <label for="type-of-game-dropdown">What type of game are you playing?</label>
+      <px-dropdown id="type-of-game-dropdown" items="{{typeOfGameItems}}" sort-mode="key" button-style="default" display-value="Select" selected="{{selectedTypeOfGameIndex}}" disable-clear></px-dropdown>
+
+      <!-- Yellow players -->
+      <template is="dom-repeat" items="{{yellowPlayers}}">
+        <label for="yellow-player-{{item.key}}">Yellow Player {{item.key}}</label>
+        <input id="yellow-player-{{item.key}}" placeholder="Email" value="{{item.email::input}}" class="text-input input--regular" type="text">
+      </template>
+
+      <!-- Black players -->
+      <template is="dom-repeat" items="{{blackPlayers}}">
+        <label for="black-player-{{item.key}}">Black Player {{item.key}}</label>
+        <input id="black-player-{{item.key}}" placeholder="Email" value="{{item.email::input}}" class="text-input input--regular" type="text">
+      </template>
+
+      <!-- Play game button -->
+      <button class="btn btn--primary" on-tap="_playGame">Play Game</button>
+
     </div>
   </template>
   <script>
     Polymer({
       is: 'lobby-view',
-      properties: { },
+      properties: { 
+        // Options for the number of players in game
+        numberOfPlayerItems: {
+          type: Object,
+          value: function() {
+            return [
+              {
+                "key": "0",
+                "val": 2,
+                "selected": true
+              },
+              {
+                "key": "1",
+                "val": 4
+              }
+            ]
+          }
+        },
+
+        // The selected number of players index
+        selectedNumberOfPlayersIndex: { 
+          type: String, 
+          value: 0, 
+          observer: "_handleNumberOfPlayersChanged" 
+        },
+
+        // The selected number of players value
+        selectedNumberOfPlayersValue: {
+          type: Number,
+          value: 2
+        },
+
+        // Options for the type of game that can be played
+        typeOfGameItems: {
+          type: Object,
+          value: function() {
+            return [
+              {
+                "key": "0",
+                "val": "Individual",
+                "selected": true
+              },
+              {
+                "key": "1",
+                "val": "Series"
+              }
+            ]
+          }
+        },
+
+        // The selected type of game index
+        selectedTypeOfGameIndex: { 
+          type: String, 
+          value: 0, 
+          observer: "_handleTypeOfGameChanged" 
+        },
+
+        // The selected type of game value
+        selectedTypeOfGameValue: {
+          type: String,
+          value: "Individual"
+        },
+
+        // Yellow team
+        yellowPlayers: {
+          type: Object,
+          value: []
+        },
+
+        // Black team
+        blackPlayers: {
+          type: Object,
+          value: []
+        },
+
+        // Game object
+        game: {
+          type: Object,
+          value: Object
+        }
+      },
+
+      ready: function () {
+        this._buildPlayers(this.selectedNumberOfPlayersValue);
+      },
+
+      _buildPlayers: function(numberOfPlayers) {
+        // Add to the yellow players group
+        let yellow = [];
+        for (var i = 0; i < (numberOfPlayers / 2); i++) {
+          let newPlayer = {"key": i + 1, "email": "", "pin": "" }
+          yellow.push(newPlayer);
+        }
+        this.set("yellowPlayers", yellow);
+
+        // Add to the black players group
+        let black = [];
+        for (var i = 0; i < (numberOfPlayers / 2); i++) {
+          let newPlayer = {"key": i + 1, "email": "", "pin": "" }
+          black.push(newPlayer);
+        }
+        this.set("blackPlayers", black);
+
+        // Setup the game with the new players
+        this._setupGame();
+      },
+
+      _setupGame: function() {
+        let game = {
+          "numPlayers": this.selectedNumberOfPlayersValue,
+          "gameType": this.selectedTypeOfGameValue,
+          "blackPlayers": this.blackPlayers,
+          "yellowPlayers": this.yellowPlayers
+        };
+
+        this.set("game", game);
+      },
+
+      _handleNumberOfPlayersChanged: function() {
+        this.set("selectedNumberOfPlayersValue", this.numberOfPlayerItems[this.selectedNumberOfPlayersIndex].val);
+        this._buildPlayers(this.selectedNumberOfPlayersValue);
+      },
+
+      _handleTypeOfGameChanged: function() {
+        this.set("selectedTypeOfGameValue", this.typeOfGameItems[this.selectedTypeOfGameIndex].val);
+        this._setupGame();
+      },
+
+      _playGame: function() {
+        console.log(this.game);
+      }
     });
   </script>
 </dom-module>

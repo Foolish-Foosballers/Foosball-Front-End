@@ -1,5 +1,5 @@
 {
-  "name": "Foosball-Front-End",
+  "name": "foosball-front-end",
   "version": "1.0.0",
   "private": true,
   "ignore": [
@@ -31,7 +31,9 @@
     "px-box-sizing-design": "^1.0.2",
     "px-clearfix-design": "^1.0.1",
     "px-headings-design": "^1.0.3",
-    "px-forms-design": "^2.0.6"
+    "px-forms-design": "^2.0.6",
+    "px-dropdown": "^4.1.0",
+    "px-buttons-design": "^2.0.5"
   },
   "resolutions": {
     "webcomponentsjs": "^0.7.24"

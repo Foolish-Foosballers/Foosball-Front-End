@@ -1,14 +1,42 @@
 <!-- Polymer -->
 <link rel="import" href="../../../../bower_components/polymer/polymer.html">
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js">
+</script>
 <dom-module id="scoreboard-view">
   <template>
     <h1>Scoreboard</h1>
+    <span>{{blackScore}}</span>
+    <span>{{yellowScore}}</span>
   </template>
   <script>
     Polymer({
       is: 'scoreboard-view',
-      properties: { },
+      properties: {
+        yellowScore: {
+          type: Number,
+          value: 0
+        },
+        blackScore: {
+          type: Number,
+          value: 0
+        }
+       },
+      ready: function() {
+        console.log("ready");
+        this._startSocket();
+      },
+      _startSocket: function() {
+        var socket = io.connect('http://localhost:3080');
+        socket.on('new-item', function (data) {
+          console.log(data);
+          if (data == "Black Scored!") {
+            console.log(data);
+          }
+          else if (data == "Yellow Scored!") {
+            console.log(data);
+          }
+        });
+      }
     });
   </script>
 </dom-module>

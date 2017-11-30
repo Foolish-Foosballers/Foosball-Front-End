@@ -5,12 +5,17 @@ The predix-webapp-starter Express web application includes these features:
   * passport-predix-oauth for authentication, and a sample secure route
   * a proxy module for calling Predix services such as asset and time series
 *******************************************************/
-var http = require('http'); // needed to integrate with ws package for mock web socket server.
+var amqp = require('amqplib/callback_api');
 var express = require('express');
-var path = require('path');
+var http = require('http'); // needed to integrate with ws package for mock web socket server.
 var app = express();
 var httpServer = http.createServer(app);
-var amqp = require('amqplib/callback_api');
+// var config = require("./config.js");
+var socketio = require("socket.io");
+var io = socketio.listen(3080);
+var path = require('path');
+
+
 var apiRoute = '/api/v1/';
 
 /**********************************************************************
@@ -26,7 +31,9 @@ console.log('************ Environment: '+node_env+'******************');
 	SET UP EXPRESS ROUTES
 *****************************************************************************/
 
+// LOOK HERE!!!! For targeting specific routes in ../public
 app.use(express.static(path.join(__dirname, process.env['base-dir'] ? process.env['base-dir'] : '../public')));
+// LOOK HERE!!
 
 ////// error handlers //////
 // catch 404 and forward to error handler
@@ -65,23 +72,19 @@ app.use(function(err, req, res, next) {
 /****************************************************************************
 	Message Queue
 *****************************************************************************/
-app.use([apiRoute + 'queue/initializeQueue'], function() {
-	var vcap_services = JSON.parse(process.env.VCAP_SERVICES);
-	console.log(vcap_services);
-	var uri = vcap_services["rabbitmq-36"][0].credentials.uri;
-	console.log(uri);
-
-	amqp.connect(uri, function(err, conn) {
-		console.log(err);
-		console.log(conn);
-		// conn.createChannel(function(err, ch) {
-		// 	var q = "first_q";
-		// 	var msg = "Hello world!";
-		// 	ch.assertQueue(q, {durable: false});
-		// 	setInterval(function() {
-		// 		ch.sendToQueue(q, Buffer.from(msg));
-		// 	}, 2000);
-		// });
+app.use('/game/scoreboard', function() {
+	// socket.io logic
+	console.log("works");
+	var url = "amqp://yuvzailr:H59aEL4rstxeP6nJm5Tzt71yeymhPOhM@elephant.rmq.cloudamqp.com/yuvzailr";
+	amqp.connect(url, function (err, conn) {
+		conn.createChannel(function (err, ch) {
+		  var queue_name = "listen_for_goal";
+		  ch.assertQueue(queue_name, { durable: false });
+		  ch.consume(queue_name, function (msg) {
+			console.log(msg.content.toString());
+			io.sockets.emit("new-item", msg.content.toString());
+		  }, { noAck: true });
+		});
 	});
 });
 

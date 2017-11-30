@@ -27,15 +27,15 @@
 
     <!-- STATE: subroute = /#/game/lobby -->
     <template is="dom-if" if="[[_isLobbyView(route.path)]]">
-      <lobby-view></lobby-view>
+      <lobby-view game="{{gameObject}}"></lobby-view>
     </template>
 
     <!-- STATE: subroute = /#/game/scoreboard -->
     <template is="dom-if" if="[[_isScoreboardView(route.path)]]">
-      <scoreboard-view></scoreboard-view>
+      <scoreboard-view route="{{route}}" game="{{gameObject}}"></scoreboard-view>
     </template>
 
-    <!-- STATE: route.path != /#/lobby/ && route.path != /#/scoreboard/ load the lobby view -->
+    <!-- STATE: route.path != /#/game/lobby/ && route.path != /#/game/scoreboard/ load the lobby view -->
     <template is="dom-if" if="[[_isInvalidView(route.path)]]"></template>
   </template>
   <script>
@@ -44,7 +44,20 @@
 
       properties: {
         // State of the page
-        pageIsLoading: { value: Boolean, value: true }
+        pageIsLoading: { value: Boolean, value: true },
+
+        // Game object
+        gameObject: {
+          type: Object,
+          value: function () {
+            return {
+              "numPlayers": null,
+              "type": null,
+              "blackPlayers": null,
+              "yellowPlayers": null
+            }
+          }
+        }
       },
 
       _isLobbyView: function(view) {

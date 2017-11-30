@@ -14,34 +14,40 @@
     <style include="game-app-styles" is="custom-style"></style>
     <style include="lobby-view-styles" is="custom-style"></style>
 
-    <div role="header">
-      <h1>Welcome</h1>
-    </div>
-
     <div role="container">
-      <!-- Number of players -->
-      <label for="number-of-players-dropdown">How many players in your game?</label>
-      <px-dropdown id="number-of-players-dropdown" items="{{numberOfPlayerItems}}" sort-mode="key" button-style="default" display-value="Select" selected="{{selectedNumberOfPlayersIndex}}" disable-clear></px-dropdown>
 
-      <!-- Type of game -->
-      <label for="type-of-game-dropdown">What type of game are you playing?</label>
-      <px-dropdown id="type-of-game-dropdown" items="{{typeOfGameItems}}" sort-mode="key" button-style="default" display-value="Select" selected="{{selectedTypeOfGameIndex}}" disable-clear></px-dropdown>
-
-      <!-- Yellow players -->
-      <template is="dom-repeat" items="{{yellowPlayers}}">
-        <label for="yellow-player-{{item.key}}">Yellow Player {{item.key}}</label>
-        <input id="yellow-player-{{item.key}}" placeholder="Email" value="{{item.email::input}}" class="text-input input--regular" type="text">
-      </template>
-
-      <!-- Black players -->
-      <template is="dom-repeat" items="{{blackPlayers}}">
-        <label for="black-player-{{item.key}}">Black Player {{item.key}}</label>
-        <input id="black-player-{{item.key}}" placeholder="Email" value="{{item.email::input}}" class="text-input input--regular" type="text">
-      </template>
-
-      <!-- Play game button -->
-      <button class="btn btn--primary" on-tap="_playGame">Play Game</button>
-
+      <!-- Header -->
+      <div role="header">
+        <h1>Game Lobby</h1>
+      </div>
+  
+      <!-- Form -->
+      <div role="form">
+        <!-- Number of players -->
+        <div id="group">
+          <p>How many players in your game?</p>
+          <px-dropdown id="number-of-players-dropdown" items="{{numberOfPlayerItems}}" sort-mode="key" button-style="default" display-value="Select" selected="{{selectedNumberOfPlayersIndex}}" disable-clear></px-dropdown>
+        </div>
+  
+        <!-- Type of game -->
+        <p>What type of game are you playing?</p>
+        <px-dropdown id="type-of-game-dropdown" items="{{typeOfGameItems}}" sort-mode="key" button-style="default" display-value="Select" selected="{{selectedTypeOfGameIndex}}" disable-clear></px-dropdown>
+  
+        <!-- Yellow players -->
+        <template is="dom-repeat" items="{{yellowPlayers}}">
+          <p>Yellow Player {{item.key}}</p>
+          <input id="yellow-player-{{item.key}}" placeholder="SSO" type="number" value="{{item.SSO::input}}" class="text-input input--regular" type="text">
+        </template>
+  
+        <!-- Black players -->
+        <template is="dom-repeat" items="{{blackPlayers}}">
+          <p>Black Player {{item.key}}</p>
+          <input id="black-player-{{item.key}}" placeholder="SSO" type="number" value="{{item.SSO::input}}" class="text-input input--regular" type="text">
+        </template>
+  
+        <!-- Play game button -->
+        <a route="/game/scoreboard" href="/#/game/scoreboard" class="btn btn--primary">Play Game</a>
+      </div>
     </div>
   </template>
   <script>
@@ -91,7 +97,8 @@
               },
               {
                 "key": "1",
-                "val": "Series"
+                "val": "Series",
+                "disabled": true
               }
             ]
           }
@@ -120,24 +127,14 @@
         blackPlayers: {
           type: Object,
           value: []
-        },
-
-        // Game object
-        game: {
-          type: Object,
-          value: Object
         }
-      },
-
-      ready: function () {
-        this._buildPlayers(this.selectedNumberOfPlayersValue);
       },
 
       _buildPlayers: function(numberOfPlayers) {
         // Add to the yellow players group
         let yellow = [];
         for (var i = 0; i < (numberOfPlayers / 2); i++) {
-          let newPlayer = {"key": i + 1, "email": "", "pin": "" }
+          let newPlayer = {"key": i + 1, "SSO": "", "pin": ""}
           yellow.push(newPlayer);
         }
         this.set("yellowPlayers", yellow);
@@ -145,7 +142,7 @@
         // Add to the black players group
         let black = [];
         for (var i = 0; i < (numberOfPlayers / 2); i++) {
-          let newPlayer = {"key": i + 1, "email": "", "pin": "" }
+          let newPlayer = {"key": i + 1, "SSO": "", "pin": "" }
           black.push(newPlayer);
         }
         this.set("blackPlayers", black);
@@ -155,14 +152,10 @@
       },
 
       _setupGame: function() {
-        let game = {
-          "numPlayers": this.selectedNumberOfPlayersValue,
-          "gameType": this.selectedTypeOfGameValue,
-          "blackPlayers": this.blackPlayers,
-          "yellowPlayers": this.yellowPlayers
-        };
-
-        this.set("game", game);
+        this.set("game.numPlayers", this.selectedNumberOfPlayersValue);
+        this.set("game.type", this.selectedTypeOfGameValue);
+        this.set("game.blackPlayers", this.blackPlayers);
+        this.set("game.yellowPlayers", this.yellowPlayers);
       },
 
       _handleNumberOfPlayersChanged: function() {

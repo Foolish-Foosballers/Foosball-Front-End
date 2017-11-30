@@ -9,6 +9,18 @@
     Polymer({
       is: 'scoreboard-view',
       properties: { },
+
+      attached: function() {
+        if (this.game.type == null || this.game.blackPlayers.count < 2 || this.game.yellowPlayers.count < 2) {
+          this.set("route.path", "/lobby");
+        } else {
+          this._startGame();
+        }
+      },
+
+      _startGame: function() {
+        console.log("game started");
+      }
     });
   </script>
 </dom-module>

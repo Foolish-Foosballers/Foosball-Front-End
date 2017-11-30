@@ -46,7 +46,7 @@
         </template>
   
         <!-- Play game button -->
-        <a route="/game/scoreboard" href="/#/game/scoreboard" class="btn btn--primary">Play Game</a>
+        <button class="btn btn--primary" on-tap="_playGame">Play Game</button>
       </div>
     </div>
   </template>
@@ -92,7 +92,7 @@
             return [
               {
                 "key": "0",
-                "val": "Individual",
+                "val": "Single",
                 "selected": true
               },
               {
@@ -114,7 +114,7 @@
         // The selected type of game value
         selectedTypeOfGameValue: {
           type: String,
-          value: "Individual"
+          value: "Single"
         },
 
         // Yellow team
@@ -169,7 +169,39 @@
       },
 
       _playGame: function() {
-        console.log(this.game);
+        if (this._validateForm() !== false) {
+          this.set("route.path", "/scoreboard");
+        }
+      },
+
+      _validateForm: function() {
+        let isValidForm = true;
+
+        // Check the yellow player(s) input fields
+        for(n = 0; n < this.selectedNumberOfPlayersValue / 2; n++) {
+          if (this._validateInput("yellow-player-" + (n + 1)) !== true) {
+            isValidForm = false;
+          }
+        }
+
+        // Check the black player(s) input fields
+        for(i = 0; i < this.selectedNumberOfPlayersValue / 2; i++) {
+          if (this._validateInput("black-player-" + (i + 1)) !== true) {
+            isValidForm = false;
+          }
+        }
+
+        return isValidForm;
+      },
+
+      _validateInput: function(inputId) {
+        let isValidInput = true;
+        let el = document.getElementById(inputId);
+        if (el.value === '' || el.value === null || el.value === undefined) {
+          el.classList.add("validation-error");
+          isValidInput = false;
+        }
+        return isValidInput;
       }
     });
   </script>

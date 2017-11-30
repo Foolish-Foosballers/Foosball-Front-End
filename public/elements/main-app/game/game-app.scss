@@ -1,5 +1,9 @@
+// Dropdown styles
 $inuit-enable-input--regular : true;
-@import "px-forms-design/_base.forms.scss";
+$inuit-enable-validation-states : true;
+@import 'px-forms-design/_base.forms.scss';
+
+// Button styles
 $inuit-enable-btn--primary : true;
 @import 'px-buttons-design/_objects.buttons.scss';
 

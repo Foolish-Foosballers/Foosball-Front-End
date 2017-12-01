@@ -70,28 +70,34 @@ app.use(function(err, req, res, next) {
 /****************************************************************************
 	Message Queue
 *****************************************************************************/
-app.use([apiRoute + 'queue/startSocket'], function() {
-	// socket.io logic
-	console.log("Socket has been started");
-	//io.sockets.emit("new-item", "Black Scored!");
-	var url = "amqp://yuvzailr:H59aEL4rstxeP6nJm5Tzt71yeymhPOhM@elephant.rmq.cloudamqp.com/yuvzailr";
-	amqp.connect(url, function (err, conn) {
-		console.log(err);
-		conn.createChannel(function (err, ch) {
-		  var queue_name = "listen_for_goal";
-		  ch.assertQueue(queue_name, { durable: false });
-		  ch.consume(queue_name, function (msg) {
-			console.log(msg.content.toString());
-			io.sockets.emit("new-item", msg.content.toString());
-		  }, { noAck: true });
-		});
-	});
-});
+// Import the routes
+var gameRouter = require('./routes/game.js');
 
-app.use([apiRoute + 'queue/closeSocket'], function() {
-	console.log("Close the socket");
-	// TODO: Close the socket
-});
+// Use the routes
+app.use([apiRoute + 'game/'], gameRouter);
+
+// app.use([apiRoute + 'queue/startSocket'], function() {
+// 	// socket.io logic
+// 	console.log("Socket has been started");
+// 	//io.sockets.emit("new-item", "Black Scored!");
+// 	var url = "amqp://yuvzailr:H59aEL4rstxeP6nJm5Tzt71yeymhPOhM@elephant.rmq.cloudamqp.com/yuvzailr";
+// 	amqp.connect(url, function (err, conn) {
+// 		console.log(err);
+// 		conn.createChannel(function (err, ch) {
+// 		  var queue_name = "listen_for_goal";
+// 		  ch.assertQueue(queue_name, { durable: false });
+// 		  ch.consume(queue_name, function (msg) {
+// 			console.log(msg.content.toString());
+// 			io.sockets.emit("new-item", msg.content.toString());
+// 		  }, { noAck: true });
+// 		});
+// 	});
+// });
+
+// app.use([apiRoute + 'queue/closeSocket'], function() {
+// 	console.log("Close the socket");
+// 	// TODO: Close the socket
+// });
 
 // app.use([apiRoute + 'queue/closeQueue'], function() {
 // 	var vcap_services = JSON.parse(process.env.VCAP_SERVICES);

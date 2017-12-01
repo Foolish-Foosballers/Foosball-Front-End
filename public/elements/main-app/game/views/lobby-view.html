@@ -3,6 +3,7 @@
 
 <!-- PX components -->
 <link rel="import" href="../../../../bower_components/px-dropdown/px-dropdown.html">
+<link rel="import" href="../../../../bower_components/px-progress-bar/px-progress-bar.html">
 
 <!-- Local theming -->
 <link rel="import" href="../game-app-styles.html">
@@ -20,72 +21,139 @@
     <style include="game-app-styles" is="custom-style"></style>
     <style include="lobby-view-styles" is="custom-style"></style>
 
-    <div role="container">
+    <!-- STATE: Page is loading -->
+    <template is="dom-if" if="{{pageIsLoading}}">
+      <px-progress-bar
+        value="100"
+        min="0"
+        max="100"
+        infinite>
+      </px-progress-bar>
+    </template>  
 
-      <!-- Header -->
-      <div role="header">
-        <h1>Game Lobby</h1>
-      </div>
-  
-      <!-- Form -->
-      <div role="form">
-        <!-- Number of players -->
-        <p>How many players in your game?</p>
-        <px-dropdown 
-          id="number-of-players-dropdown" 
-          items="{{numberOfPlayerItems}}" 
-          sort-mode="key" 
-          button-style="default" 
-          display-value="Select" 
-          selected="{{selectedNumberOfPlayersIndex}}" 
-          disable-clear>
-        </px-dropdown>
-  
-        <!-- Type of game -->
-        <p>What type of game are you playing?</p>
-        <px-dropdown 
-          id="type-of-game-dropdown" 
-          items="{{typeOfGameItems}}" 
-          sort-mode="key" 
-          button-style="default" 
-          display-value="Select" 
-          selected="{{selectedTypeOfGameIndex}}" 
-          disable-clear>
-        </px-dropdown>
-  
-        <!-- Yellow players -->
-        <template is="dom-repeat" items="{{yellowPlayers}}">
-          <p>Yellow Player {{item.key}}</p>
-          <input 
-            class="text-input input--regular" 
-            id="yellow-player-{{item.key}}" 
-            placeholder="SSO" 
-            type="number" 
-            value="{{item.SSO::input}}" 
-            on-input="_handlePlayerInputChanged">
-        </template>
-  
-        <!-- Black players -->
-        <template is="dom-repeat" items="{{blackPlayers}}">
-          <p>Black Player {{item.key}}</p>
-          <input 
-            class="text-input input--regular" 
-            id="black-player-{{item.key}}" 
-            placeholder="SSO" 
-            type="number" 
-            value="{{item.SSO::input}}" 
-            on-input="_handlePlayerInputChanged">
-        </template>
-  
-        <!-- Play game button -->
-        <button class="btn btn--primary" on-tap="_playGame">Play Game</button>
-      </div>
-    </div>
+    <!-- STATE: Page is not loading -->
+    <template is="dom-if" if="{{!pageIsLoading}}">
+      <!-- STATE: Page is not loading and has an error -->
+      <template is="dom-if" if="{{pageHasError}}">
+        <div role="error" id="container--error">
+          <h1>Error receiving data</h1>
+          <p>Please report the following error message <a target="_blank" href="https://github.com/Foolish-Foosballers/Foosball-Front-End/issues">here</a>.</p>
+          <div id="container--error-message">{{error}}</div>
+        </div>
+      </template>
+
+      <!-- STATE: Page is not loading and does not have an error -->
+      <template is="dom-if" if="{{!pageHasError}}">
+        <div role="container">
+          <!-- Header -->
+          <div role="header">
+            <h1>Game Lobby</h1>
+          </div>
+      
+          <!-- Form -->
+          <div role="form">
+            <!-- Number of players -->
+            <p>How many players in your game?</p>
+            <px-dropdown 
+              id="number-of-players-dropdown" 
+              items="{{numberOfPlayerItems}}" 
+              sort-mode="key" 
+              button-style="default" 
+              display-value="Select" 
+              selected="{{selectedNumberOfPlayersIndex}}" 
+              disable-clear>
+            </px-dropdown>
+      
+            <!-- Type of game -->
+            <p>What type of game are you playing?</p>
+            <px-dropdown 
+              id="type-of-game-dropdown" 
+              items="{{typeOfGameItems}}" 
+              sort-mode="key" 
+              button-style="default" 
+              display-value="Select" 
+              selected="{{selectedTypeOfGameIndex}}" 
+              disable-clear>
+            </px-dropdown>
+      
+            <!-- Yellow players -->
+            <template is="dom-repeat" items="{{yellowPlayers}}">
+              <p>Yellow Player {{item.key}}</p>
+              <input 
+                class="text-input input--regular" 
+                id="yellow-player-{{item.key}}" 
+                placeholder="SSO" 
+                type="number" 
+                value="{{item.SSO::input}}" 
+                on-input="_handlePlayerInputChanged">
+            </template>
+      
+            <!-- Black players -->
+            <template is="dom-repeat" items="{{blackPlayers}}">
+              <p>Black Player {{item.key}}</p>
+              <input 
+                class="text-input input--regular" 
+                id="black-player-{{item.key}}" 
+                placeholder="SSO" 
+                type="number" 
+                value="{{item.SSO::input}}" 
+                on-input="_handlePlayerInputChanged">
+            </template>
+      
+            <!-- Play game button -->
+            <button class="btn btn--primary" on-tap="_playGame">Play Game</button>
+          </div>
+        </div>
+      </template>   
+    </template>   
+
+    <!-- Networking -->
+    <iron-ajax 
+      auto 
+      id="req-get-gameObj" 
+      method="get"
+      url="/api/v1/game/" 
+      handle-as="json"
+      on-response="_handleGetGameObj" 
+      on-error="_handleNetworkError">
+    </iron-ajax>
+    <iron-ajax  
+      id="req-put-gameObj" 
+      method="put"
+      url="/api/v1/game/" 
+      content-type="application/json"
+      on-response="_handlePutGameObj" 
+      on-error="_handleNetworkError">
+    </iron-ajax>
   </template>
   <script>
     Polymer({
       is: 'lobby-view',
       properties: { 
+        // State of the page 
+        pageIsLoading: {
+          type: Boolean,
+          value: true
+        },
+
+        // State of page error
+        pageHaseError: {
+          type: Boolean,
+          value: true
+        },
+
+        // Error value
+        error: { 
+          type: String, 
+          value: "" 
+        },
+
+        // State of game object
+        gameObjectReceived: {
+          type: Boolean,
+          value: false
+        },
+
         // Options for the number of players in game
         numberOfPlayerItems: {
           type: Object,
@@ -159,6 +227,12 @@
         blackPlayers: {
           type: Object,
           value: []
+        },
+
+        // Game object being built using the form
+        gameObject: {
+          type: JSON,
+          value: {}
         }
       },
 
@@ -192,11 +266,12 @@
        * Bind the form attributes to the game object attributes 
        */
       _setupGame: function() {
-        this.set("game.numPlayers", this.selectedNumberOfPlayersValue);
-        this.set("game.type", this.selectedTypeOfGameValue);
-        this.set("game.blackPlayers", this.blackPlayers);
-        this.set("game.yellowPlayers", this.yellowPlayers);
-        this.set("game.gameInProgress", false);
+        this.set("gameObject.numPlayers", this.selectedNumberOfPlayersValue);
+        this.set("gameObject.type", this.selectedTypeOfGameValue);
+        this.set("gameObject.blackPlayers", this.blackPlayers);
+        this.set("gameObject.yellowPlayers", this.yellowPlayers);
+        this.set("gameObject.gameInProgress", false);
+        console.log(this.gameObject);
       },
 
       /**
@@ -221,6 +296,38 @@
       _handlePlayerInputChanged: function(e) {
         let el = e.target;
         el.classList.remove("validation-error");
+      },
+
+      /**
+       * Decide if the page content should be loaded. Load the page if all data is received
+       */
+      _loadPageContent: function() {
+        if (this.gameObjectReceived === true) {
+          this.set("pageHasError", false);
+          this.set("pageIsLoading", false);
+        }
+      },
+
+      /**
+       * Get and set the gameObject
+       * 
+       * @param data is the response body received from the server
+       */    
+      _handleGetGameObj: function(data) {
+        this.set("gameObject", data.detail.response.game);
+        this.set("gameObjectReceived", true);
+        this._loadPageContent();
+      },
+
+      /**
+       * If there is a network request error notify the user
+       * 
+       * @param data is the the response body received from the server
+       */
+      _handleNetworkError: function(data) {
+        this.set("pageHasError", true);
+        this.set("error", data.detail.error + ' - ' + data.detail.request.baseURI);
+        this.set("pageIsLoading", false);
       },
 
       /**

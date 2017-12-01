@@ -3,9 +3,8 @@
 
 <!-- Networking -->
 <link rel="import" href="../../../../bower_components/iron-ajax/iron-ajax.html"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
 
-</script>
 <dom-module id="scoreboard-view">
   <template>
     <h1>Scoreboard</h1>
@@ -49,9 +48,9 @@
       _startGame: function() {
         console.log("game started");
 
-        this._startSocket();
-        let request = document.getElementById("req-start-socket");
-        request.generateRequest();
+        // let request = document.getElementById("req-start-socket");
+        // request.generateRequest();
+        // this._startSocket();
       },
 
       _handleStartSocketRequest: function() {

@@ -22,7 +22,12 @@
 
     <!-- STATE: Page is loading -->
     <template is="dom-if" if="{{pageIsLoading}}">
-      <px-progress-bar id="progress-bar" infinite></px-progress-bar>
+      <px-progress-bar
+        value="100"
+        min="0"
+        max="100"
+        infinite>
+      </px-progress-bar>
     </template>
 
     <!-- STATE: subroute = /#/game/lobby -->

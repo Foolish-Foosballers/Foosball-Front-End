@@ -32,7 +32,7 @@
 
     <!-- STATE: subroute = /#/game/lobby -->
     <template is="dom-if" if="[[_isLobbyView(route.path)]]">
-      <lobby-view route="{{route}}" game="{{gameObject}}"></lobby-view>
+      <lobby-view route="{{route}}"></lobby-view>
     </template>
 
     <!-- STATE: subroute = /#/game/scoreboard -->

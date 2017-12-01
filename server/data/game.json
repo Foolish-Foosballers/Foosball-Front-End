@@ -3,7 +3,6 @@
     "numPlayers": null,
     "type": null,
     "blackPlayers": null,
-    "yellowPlayers": null,
     "blackScore": 0,
     "yellowScore": 0,
     "gameInProgress": false

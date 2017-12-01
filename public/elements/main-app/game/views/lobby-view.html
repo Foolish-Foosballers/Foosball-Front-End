@@ -10,10 +10,9 @@
 <link rel="import" href="./styles/lobby-view-styles.html">
 
 <!--
-  `<lobby-view route="{}" game="{}">` Creates a form for game setup.
+  `<lobby-view route="{}">` Creates a form for game setup.
   
   @param {JSON} route is the route object for the application
-  @param {JSON} game is the game object for the application
  -->
 <dom-module id="lobby-view">
   <template>
@@ -320,6 +319,13 @@
       },
 
       /**
+       * Put the game object
+       */
+      _handlePutGameObj: function() {
+        this.set("route.path", "/scoreboard");
+      },
+
+      /**
        * If there is a network request error notify the user
        * 
        * @param data is the the response body received from the server
@@ -335,8 +341,10 @@
        */
       _playGame: function() {
         if (this._validateForm() !== false) {
-          this.set("game.gameInProgress", true);
-          this.set("route.path", "/scoreboard");
+          this.set("gameObject.gameInProgress", true);
+          let request = document.getElementById("req-put-gameObj");
+          request.body = {"game":this.gameObject};
+          request.generateRequest();
         }
       },
 

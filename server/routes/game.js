@@ -53,7 +53,7 @@ router.put(['/'], function(req, res) {
     let updateGameObj = gameObj;
     updateGameObj.game = req.body.game;
     fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function (err) {
-      if(err) {
+      if (err) {
         console.log(err);
         res.json({status: 202});
       } else {

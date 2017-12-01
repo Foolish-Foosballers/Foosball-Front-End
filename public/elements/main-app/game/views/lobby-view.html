@@ -24,25 +24,51 @@
       <!-- Form -->
       <div role="form">
         <!-- Number of players -->
-        <div id="group">
-          <p>How many players in your game?</p>
-          <px-dropdown id="number-of-players-dropdown" items="{{numberOfPlayerItems}}" sort-mode="key" button-style="default" display-value="Select" selected="{{selectedNumberOfPlayersIndex}}" disable-clear></px-dropdown>
-        </div>
+        <p>How many players in your game?</p>
+        <px-dropdown 
+          id="number-of-players-dropdown" 
+          items="{{numberOfPlayerItems}}" 
+          sort-mode="key" 
+          button-style="default" 
+          display-value="Select" 
+          selected="{{selectedNumberOfPlayersIndex}}" 
+          disable-clear>
+        </px-dropdown>
   
         <!-- Type of game -->
         <p>What type of game are you playing?</p>
-        <px-dropdown id="type-of-game-dropdown" items="{{typeOfGameItems}}" sort-mode="key" button-style="default" display-value="Select" selected="{{selectedTypeOfGameIndex}}" disable-clear></px-dropdown>
+        <px-dropdown 
+          id="type-of-game-dropdown" 
+          items="{{typeOfGameItems}}" 
+          sort-mode="key" 
+          button-style="default" 
+          display-value="Select" 
+          selected="{{selectedTypeOfGameIndex}}" 
+          disable-clear>
+        </px-dropdown>
   
         <!-- Yellow players -->
         <template is="dom-repeat" items="{{yellowPlayers}}">
           <p>Yellow Player {{item.key}}</p>
-          <input id="yellow-player-{{item.key}}" placeholder="SSO" type="number" value="{{item.SSO::input}}" class="text-input input--regular" type="text">
+          <input 
+            class="text-input input--regular" 
+            id="yellow-player-{{item.key}}" 
+            placeholder="SSO" 
+            type="number" 
+            value="{{item.SSO::input}}" 
+            on-input="_handlePlayerInputChanged">
         </template>
   
         <!-- Black players -->
         <template is="dom-repeat" items="{{blackPlayers}}">
           <p>Black Player {{item.key}}</p>
-          <input id="black-player-{{item.key}}" placeholder="SSO" type="number" value="{{item.SSO::input}}" class="text-input input--regular" type="text">
+          <input 
+            class="text-input input--regular" 
+            id="black-player-{{item.key}}" 
+            placeholder="SSO" 
+            type="number" 
+            value="{{item.SSO::input}}" 
+            on-input="_handlePlayerInputChanged">
         </template>
   
         <!-- Play game button -->
@@ -156,6 +182,7 @@
         this.set("game.type", this.selectedTypeOfGameValue);
         this.set("game.blackPlayers", this.blackPlayers);
         this.set("game.yellowPlayers", this.yellowPlayers);
+        this.set("game.gameInProgress", false);
       },
 
       _handleNumberOfPlayersChanged: function() {
@@ -168,8 +195,14 @@
         this._setupGame();
       },
 
+      _handlePlayerInputChanged: function(e) {
+        let el = e.target;
+        el.classList.remove("validation-error");
+      },
+
       _playGame: function() {
         if (this._validateForm() !== false) {
+          this.set("game.gameInProgress", true);
           this.set("route.path", "/scoreboard");
         }
       },

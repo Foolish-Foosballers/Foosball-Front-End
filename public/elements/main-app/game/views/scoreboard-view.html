@@ -24,16 +24,17 @@
       },
 
       ready: function() {
-        console.log("ready");
-        //this._startSocket();
-      },
-
-      attached: function() {
-        if (this.game.type == null || this.game.blackPlayers.count < 2 || this.game.yellowPlayers.count < 2) {
+        console.log(this.game);
+        if (this.game.gameInProgress === false) {
           this.set("route.path", "/lobby");
         } else {
           this._startGame();
         }
+        //this._startSocket();
+      },
+
+      attached: function() {
+//console.log(this.game);
       },
 
       _startGame: function() {

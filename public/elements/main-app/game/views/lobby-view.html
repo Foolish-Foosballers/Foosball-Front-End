@@ -8,6 +8,12 @@
 <link rel="import" href="../game-app-styles.html">
 <link rel="import" href="./styles/lobby-view-styles.html">
 
+<!--
+  `<lobby-view route="{}" game="{}">` Creates a form for game setup.
+  
+  @param {JSON} route is the route object for the application
+  @param {JSON} game is the game object for the application
+ -->
 <dom-module id="lobby-view">
   <template>
     <!-- Local theme -->
@@ -156,6 +162,11 @@
         }
       },
 
+      /**
+       * Build the group of players for both the black and yellow team.
+       * 
+       * @param {number} numberOfPlayers number of players on both the black and yellow team.
+       */
       _buildPlayers: function(numberOfPlayers) {
         // Add to the yellow players group
         let yellow = [];
@@ -177,6 +188,9 @@
         this._setupGame();
       },
 
+      /**
+       * Bind the form attributes to the game object attributes 
+       */
       _setupGame: function() {
         this.set("game.numPlayers", this.selectedNumberOfPlayersValue);
         this.set("game.type", this.selectedTypeOfGameValue);
@@ -185,21 +199,33 @@
         this.set("game.gameInProgress", false);
       },
 
+      /**
+       * If the number of players index changes, update the number of players value 
+       */
       _handleNumberOfPlayersChanged: function() {
         this.set("selectedNumberOfPlayersValue", this.numberOfPlayerItems[this.selectedNumberOfPlayersIndex].val);
         this._buildPlayers(this.selectedNumberOfPlayersValue);
       },
 
+      /**
+       * If the type of game index changes, update the type of game value
+       */
       _handleTypeOfGameChanged: function() {
         this.set("selectedTypeOfGameValue", this.typeOfGameItems[this.selectedTypeOfGameIndex].val);
         this._setupGame();
       },
 
+      /**
+       * If the input value of an input component changes, remove the error class from that input component
+       */
       _handlePlayerInputChanged: function(e) {
         let el = e.target;
         el.classList.remove("validation-error");
       },
 
+      /**
+       * Play a new Foosball game with the information described in the form.
+       */
       _playGame: function() {
         if (this._validateForm() !== false) {
           this.set("game.gameInProgress", true);
@@ -207,19 +233,24 @@
         }
       },
 
+      /**
+       * Make sure all of the forms data is valid.
+       * 
+       * @return {Boolean} return true if all of the form data is valid; otherwise, return false
+       */
       _validateForm: function() {
         let isValidForm = true;
 
         // Check the yellow player(s) input fields
         for(n = 0; n < this.selectedNumberOfPlayersValue / 2; n++) {
-          if (this._validateInput("yellow-player-" + (n + 1)) !== true) {
+          if (this._validateInputComponent("yellow-player-" + (n + 1)) !== true) {
             isValidForm = false;
           }
         }
 
         // Check the black player(s) input fields
         for(i = 0; i < this.selectedNumberOfPlayersValue / 2; i++) {
-          if (this._validateInput("black-player-" + (i + 1)) !== true) {
+          if (this._validateInputComponent("black-player-" + (i + 1)) !== true) {
             isValidForm = false;
           }
         }
@@ -227,7 +258,13 @@
         return isValidForm;
       },
 
-      _validateInput: function(inputId) {
+      /**
+       * Make sure a specific input component holds valid data.
+       * 
+       * @param {String} inputId is the input components id value
+       * @return {Boolean} return true if the input component's data is valid; otherwise return false
+       */
+      _validateInputComponent: function(inputId) {
         let isValidInput = true;
         let el = document.getElementById(inputId);
         if (el.value === '' || el.value === null || el.value === undefined) {

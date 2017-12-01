@@ -1,55 +1,80 @@
 <!-- Polymer -->
 <link rel="import" href="../../../../bower_components/polymer/polymer.html">
+
+<!-- Networking -->
+<link rel="import" href="../../../../bower_components/iron-ajax/iron-ajax.html"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js">
+
 </script>
 <dom-module id="scoreboard-view">
   <template>
     <h1>Scoreboard</h1>
-    <span>{{blackScore}}</span>
-    <span>{{yellowScore}}</span>
+    <!-- Black Team -->
+    <p>Black team: {{game.blackScore}}</p>
+    
+    <!-- Yellow Team -->
+    <p>Yellow team: {{game.yellowScore}}</p>
+
+    <!-- Network requests -->
+    <iron-ajax 
+      id="req-start-socket" 
+      url="http://localhost:5000/api/v1/queue/startSocket" 
+      on-response="_handleStartSocketRequest" 
+      on-error="_handleRequestError">
+    </iron-ajax>
+    <iron-ajax 
+      id="req-close-socket" 
+      url="http://localhost:5000/api/v1/queue/closeSocket" 
+      on-response="_handleCloseSocketRequest" 
+      on-error="_handleRequestError">
+    </iron-ajax>
   </template>
   <script>
     Polymer({
       is: 'scoreboard-view',
       
-      properties: { 
-        yellowScore: {
-          type: Number,
-          value: 0
-        },
-        blackScore: {
-          type: Number,
-          value: 0
-        }
-      },
+      properties: { },
 
-      ready: function() {
+      ready: function() { },
+
+      attached: function() {
         console.log(this.game);
         if (this.game.gameInProgress === false) {
           this.set("route.path", "/lobby");
         } else {
           this._startGame();
         }
-        //this._startSocket();
-      },
-
-      attached: function() {
-//console.log(this.game);
       },
 
       _startGame: function() {
         console.log("game started");
+
+        this._startSocket();
+        let request = document.getElementById("req-start-socket");
+        request.generateRequest();
+      },
+
+      _handleStartSocketRequest: function() {
+        console.log("started");
+      },
+
+      _handleCloseSocketRequest: function() {
+        console.log("closed");
+      },
+
+      _handleRequestError: function() {
+        console.log("error");
       },
 
       _startSocket: function() {
+        let _this = this;
         var socket = io.connect('http://localhost:3080');
         socket.on('new-item', function (data) {
-          console.log(data);
-          if (data == "Black Scored!") {
-            console.log(data);
+          if (data == "L" || data == "l") {
+            _this.set("game.blackScore", _this.game.blackScore + 1);
           }
-          else if (data == "Yellow Scored!") {
-            console.log(data);
+          else if (data == "R" || data == "r") {
+            _this.set("game.yellowScore", _this.game.yellowScore + 1);
           }
         });
       }

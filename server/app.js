@@ -14,8 +14,6 @@ var httpServer = http.createServer(app);
 var socketio = require("socket.io");
 var io = socketio.listen(3080);
 var path = require('path');
-
-
 var apiRoute = '/api/v1/';
 
 /**********************************************************************
@@ -72,11 +70,13 @@ app.use(function(err, req, res, next) {
 /****************************************************************************
 	Message Queue
 *****************************************************************************/
-app.use('/game/scoreboard', function() {
+app.use([apiRoute + 'queue/startSocket'], function() {
 	// socket.io logic
-	console.log("works");
+	console.log("Socket has been started");
+	//io.sockets.emit("new-item", "Black Scored!");
 	var url = "amqp://yuvzailr:H59aEL4rstxeP6nJm5Tzt71yeymhPOhM@elephant.rmq.cloudamqp.com/yuvzailr";
 	amqp.connect(url, function (err, conn) {
+		console.log(err);
 		conn.createChannel(function (err, ch) {
 		  var queue_name = "listen_for_goal";
 		  ch.assertQueue(queue_name, { durable: false });
@@ -88,16 +88,21 @@ app.use('/game/scoreboard', function() {
 	});
 });
 
-app.use([apiRoute + 'queue/closeQueue'], function() {
-	var vcap_services = JSON.parse(process.env.VCAP_SERVICES);
-	console.log(vcap_services);
-	var uri = vcap_services["rabbitmq-36"][0].credentials.uri;
-	console.log(uri);
-
-	amqp.connect(uri, function(err, conn) {
-		conn.close();
-	});
+app.use([apiRoute + 'queue/closeSocket'], function() {
+	console.log("Close the socket");
+	// TODO: Close the socket
 });
+
+// app.use([apiRoute + 'queue/closeQueue'], function() {
+// 	var vcap_services = JSON.parse(process.env.VCAP_SERVICES);
+// 	console.log(vcap_services);
+// 	var uri = vcap_services["rabbitmq-36"][0].credentials.uri;
+// 	console.log(uri);
+
+// 	amqp.connect(uri, function(err, conn) {
+// 		conn.close();
+// 	});
+// });
 
 httpServer.listen(process.env.VCAP_APP_PORT || 5000, function () {
 	console.log ('Server started on port: ' + httpServer.address().port);

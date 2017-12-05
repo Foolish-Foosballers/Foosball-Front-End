@@ -1,10 +1,11 @@
 {
   "game": {
-    "numPlayers": null,
-    "type": null,
+    "numPlayers": 2,
+    "type": "Single",
     "blackPlayers": null,
     "blackScore": 0,
     "yellowScore": 0,
-    "gameInProgress": false
+    "gameInProgress": false,
+    "yellowPlayers": null
   }
 }

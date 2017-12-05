@@ -36,24 +36,24 @@
 
       ready: function() {
         // console.log(this.game);
-        if (this.game == undefined) {
-          this.set("route.path", "/lobby");
-        } else if (this.game.gameInProgress === false) {
-          this.set("route.path", "/lobby");
-        } else {
-          this._startGame();
-        }   
+        // if (this.game == undefined) {
+        //   this.set("route.path", "/lobby");
+        // } else if (this.game.gameInProgress === false) {
+        //   this.set("route.path", "/lobby");
+        // } else {
+        //   this._startGame();
+        // }   
       },
       
       attached: function() {
         // console.log(this.game);
-        if (this.game == undefined) {
-          this.set("route.path", "/lobby");
-        } else if (this.game.gameInProgress === false) {
-          this.set("route.path", "/lobby");
-        } else {
-          this._startGame();
-        }
+        // if (this.game == undefined) {
+        //   this.set("route.path", "/lobby");
+        // } else if (this.game.gameInProgress === false) {
+        //   this.set("route.path", "/lobby");
+        // } else {
+        //   this._startGame();
+        // }
       },
 
       _startGame: function() {

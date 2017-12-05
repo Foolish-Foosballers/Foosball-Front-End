@@ -29,6 +29,7 @@
         infinite>
       </px-progress-bar>
     </template>   
+
     <!-- STATE: Page is not loading -->
     <template is="dom-if" if="{{!pageIsLoading}}">
       <!-- STATE: Page is not loading and has an error -->
@@ -43,23 +44,23 @@
       <!-- STATE: Page is not loading and does not have an error -->
       <template is="dom-if" if="{{!pageHasError}}">
         <!-- STATE: subroute = /#/game/lobby -->
-        <template is="dom-if" if="[[_isLobbyView(route.path)]]">
+        <template is="dom-if" if="{{showLobby}}">
           <lobby-view route="{{route}}"></lobby-view>
         </template>
     
         <!-- STATE: subroute = /#/game/scoreboard -->
-        <template is="dom-if" if="[[_isScoreboardView(route.path)]]">
+        <template is="dom-if" if="{{showScoreboard}}">
           <scoreboard-view route="{{route}}"></scoreboard-view>
         </template>
     
         <!-- STATE: route.path != /#/game/lobby/ && route.path != /#/game/scoreboard/ load the lobby view -->
-        <template is="dom-if" if="[[_isInvalidView(route.path)]]"></template>
+        <template is="dom-if" if="{{showError}}">Error</template>
       </template>
     </template>
     
     <!-- Networking -->
-    <iron-ajax 
-      auto 
+    <iron-ajax  
+      auto
       id="req-get-gameObj" 
       method="get"
       url="/api/v1/game/" 
@@ -80,6 +81,12 @@
 
         gameObjectReceived: { value: Boolean, value: false },
 
+        showScoreboard: { value: Boolean, value: false },
+
+        showLobby: { value: Boolean, value: false },
+
+        showError: { value: Boolean, value: true },
+
         // Error value
         error: { type: String, value: "" },
 
@@ -91,7 +98,28 @@
        * Decide if the page content should be loaded. Load the page if all data is received
        */
        _loadPageContent: function() {
+         // Decide what view to show
         if (this.gameObjectReceived === true) {
+          if (this.gameObject.gameInProgress === false) {
+            console.log("showing lobby");
+            this.set("route.path", "/lobby");
+            this.set("showScoreboard", false);
+            this.set("showError", false);
+            this.set("showLobby", true);
+          } else if (this.gameObject.gameInProgress === true) {
+            console.log("showing scoreboard");
+            this.set("route.path", "/scoreboard");
+            this.set("showError", false);
+            this.set("showLobby", false);
+            this.set("showScoreboard", true);
+          } else {
+            this.set("route.path", "/error");
+            this.set("showLobby", false);
+            this.set("showScoreboard", false);
+            this.set("showError", true);
+          }
+
+          // Load all of the content
           this.set("pageHasError", false);
           this.set("pageIsLoading", false);
         }
@@ -118,35 +146,6 @@
         this.set("error", data.detail.error + ' - ' + data.detail.request.baseURI);
         this.set("pageIsLoading", false);
       },
-
-      _isLobbyView: function(view) {
-        if (view == "/lobby") {
-          this.set("pageIsLoading", false);
-          return true;
-        }
-        return false;
-      },
-
-      _isScoreboardView: function(view) {
-        if (view == "/scoreboard") {
-          this.set("pageIsLoading", false);
-          return true;
-        }
-        return false;        
-      },
-
-      _isInvalidView: function(view) {
-        if (view != "/scoreboard" && view != "/lobby" ) {
-          this._updatePath("/lobby");
-          this.set("pageIsLoading", false);
-          return true;
-        }
-        return false;       
-      },
-
-      _updatePath: function(path) {
-        this.set("route.path", path);
-      }
     });
   </script>
 </dom-module>

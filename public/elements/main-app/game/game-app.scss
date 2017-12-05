@@ -7,6 +7,22 @@ $inuit-enable-validation-states : true;
 $inuit-enable-btn--primary : true;
 @import 'px-buttons-design/_objects.buttons.scss';
 
+// ///////////////////////////////////////////////////
+// Error
+// ///////////////////////////////////////////////////
+[role=error] {
+  text-align: center;
+
+  #container--error-message {
+    text-align: left;
+    padding: 10px;
+    margin: auto;
+    width: 300px;
+    background-color: #BEBEBE;
+    min-height: 100px;
+  }
+}
+
 #progress-bar {
   position: absolute;
   top: 0;

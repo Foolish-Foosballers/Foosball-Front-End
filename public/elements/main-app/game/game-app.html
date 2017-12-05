@@ -28,20 +28,45 @@
         max="100"
         infinite>
       </px-progress-bar>
+    </template>   
+    <!-- STATE: Page is not loading -->
+    <template is="dom-if" if="{{!pageIsLoading}}">
+      <!-- STATE: Page is not loading and has an error -->
+      <template is="dom-if" if="{{pageHasError}}">
+        <div role="error" id="container--error">
+          <h1>Error receiving data</h1>
+          <p>Please report the following error message <a target="_blank" href="https://github.com/Foolish-Foosballers/Foosball-Front-End/issues">here</a>.</p>
+          <div id="container--error-message">{{error}}</div>
+        </div>
+      </template>
+      
+      <!-- STATE: Page is not loading and does not have an error -->
+      <template is="dom-if" if="{{!pageHasError}}">
+        <!-- STATE: subroute = /#/game/lobby -->
+        <template is="dom-if" if="[[_isLobbyView(route.path)]]">
+          <lobby-view route="{{route}}"></lobby-view>
+        </template>
+    
+        <!-- STATE: subroute = /#/game/scoreboard -->
+        <template is="dom-if" if="[[_isScoreboardView(route.path)]]">
+          <scoreboard-view route="{{route}}"></scoreboard-view>
+        </template>
+    
+        <!-- STATE: route.path != /#/game/lobby/ && route.path != /#/game/scoreboard/ load the lobby view -->
+        <template is="dom-if" if="[[_isInvalidView(route.path)]]"></template>
+      </template>
     </template>
-
-    <!-- STATE: subroute = /#/game/lobby -->
-    <template is="dom-if" if="[[_isLobbyView(route.path)]]">
-      <lobby-view route="{{route}}"></lobby-view>
-    </template>
-
-    <!-- STATE: subroute = /#/game/scoreboard -->
-    <template is="dom-if" if="[[_isScoreboardView(route.path)]]">
-      <scoreboard-view route="{{route}}" game="{{gameObject}}"></scoreboard-view>
-    </template>
-
-    <!-- STATE: route.path != /#/game/lobby/ && route.path != /#/game/scoreboard/ load the lobby view -->
-    <template is="dom-if" if="[[_isInvalidView(route.path)]]"></template>
+    
+    <!-- Networking -->
+    <iron-ajax 
+      auto 
+      id="req-get-gameObj" 
+      method="get"
+      url="/api/v1/game/" 
+      handle-as="json"
+      on-response="_handleGetGameObj" 
+      on-error="_handleNetworkError">
+    </iron-ajax>
   </template>
   <script>
     Polymer({
@@ -51,21 +76,47 @@
         // State of the page
         pageIsLoading: { value: Boolean, value: true },
 
+        pageHasError: { value: Boolean, value: false },
+
+        gameObjectReceived: { value: Boolean, value: false },
+
+        // Error value
+        error: { type: String, value: "" },
+
         // Game object
-        gameObject: {
-          type: Object,
-          value: function () {
-            return {
-              "numPlayers": null,
-              "type": null,
-              "blackPlayers": null,
-              "yellowPlayers": null,
-              "blackScore": 0,
-              "yellowScore": 0,
-              "gameInProgress": false
-            }
-          }
+        gameObject: { type: Object, value: {} }
+      },
+
+      /**
+       * Decide if the page content should be loaded. Load the page if all data is received
+       */
+       _loadPageContent: function() {
+        if (this.gameObjectReceived === true) {
+          this.set("pageHasError", false);
+          this.set("pageIsLoading", false);
         }
+      },
+
+      /**
+       * Get and set the gameObject
+       * 
+       * @param data is the response body received from the server
+       */    
+       _handleGetGameObj: function(data) {
+        this.set("gameObject", data.detail.response.game);
+        this.set("gameObjectReceived", true);
+        this._loadPageContent();
+      },
+
+      /**
+       * If there is a network request error notify the user
+       * 
+       * @param data is the the response body received from the server
+       */
+       _handleNetworkError: function(data) {
+        this.set("pageHasError", true);
+        this.set("error", data.detail.error + ' - ' + data.detail.request.baseURI);
+        this.set("pageIsLoading", false);
       },
 
       _isLobbyView: function(view) {

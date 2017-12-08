@@ -105,7 +105,20 @@ router.put(['/updateBlackScore'], function(req, res) {
 
 // TODO
 router.put(['/updateYellowScore'], function(req, res) {
-  console.log("todo");
+  if (req.body.value != undefined) {
+    let updateGameObj = gameObj;
+    updateGameObj.game.yellowScore = parseInt(gameObj.game.yellowScore + req.body.value);
+    fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function (err) {
+      if (err) {
+        console.log(err);
+        res.json({status: 202});
+      } else {
+        res.json({status: 200})
+      }
+    });
+  } else {
+    res.json({status: 202}); 
+  }
 });
 
 // TODO

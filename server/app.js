@@ -14,6 +14,7 @@ var httpServer = http.createServer(app);
 var socketio = require("socket.io");
 var io = socketio.listen(3080);
 var path = require('path');
+var request = require('request');
 var apiRoute = '/api/v1/';
 
 /**********************************************************************
@@ -76,39 +77,74 @@ var gameRouter = require('./routes/game.js');
 // Use the routes
 app.use([apiRoute + 'game/'], gameRouter);
 
-// app.use([apiRoute + 'queue/startSocket'], function() {
-// 	// socket.io logic
-// 	console.log("Socket has been started");
-// 	//io.sockets.emit("new-item", "Black Scored!");
-// 	var url = "amqp://yuvzailr:H59aEL4rstxeP6nJm5Tzt71yeymhPOhM@elephant.rmq.cloudamqp.com/yuvzailr";
-// 	amqp.connect(url, function (err, conn) {
-// 		console.log(err);
-// 		conn.createChannel(function (err, ch) {
-// 		  var queue_name = "listen_for_goal";
-// 		  ch.assertQueue(queue_name, { durable: false });
-// 		  ch.consume(queue_name, function (msg) {
-// 			console.log(msg.content.toString());
-// 			io.sockets.emit("new-item", msg.content.toString());
-// 		  }, { noAck: true });
-// 		});
-// 	});
-// });
+/**
+ * Clear all leftover data in the queue
+ */
+app.use([apiRoute + 'queue/clearSocket'], function() {
+	console.log("TODO");
+});
 
-// app.use([apiRoute + 'queue/closeSocket'], function() {
-// 	console.log("Close the socket");
-// 	// TODO: Close the socket
-// });
+/**
+ * Update the score of a foosball player
+ * 
+ * @param {* string} val player who's score should be update. 1 = black; 2 = yellow
+ */
+function updatePlayerScore(val) {
+	let url = "http://localhost:5000/api/v1/game/update";
+	
+	switch (val) {
+		case "1":
+			url = url + "BlackScore"
+			break;
+		case "2":
+			url = url + "YellowScore"
+			break;
+		default:
+			url = null
+			break;
+	}	
 
-// app.use([apiRoute + 'queue/closeQueue'], function() {
-// 	var vcap_services = JSON.parse(process.env.VCAP_SERVICES);
-// 	console.log(vcap_services);
-// 	var uri = vcap_services["rabbitmq-36"][0].credentials.uri;
-// 	console.log(uri);
+	if (url !== null) {
+		request.put({
+			url: url,
+			method: "PUT",
+			json: {
+				value: 1
+			}
+		}, function(error, response, body) {
+			if (error !== undefined || error !== null) {
+				io.sockets.emit("update-game-object", '3');
+			}
+		});	
+	}
+}
 
-// 	amqp.connect(uri, function(err, conn) {
-// 		conn.close();
-// 	});
-// });
+/**
+ * Start socket.io and start listening for requests
+ */
+app.use([apiRoute + 'queue/startSocket'], function() {
+	var url = "amqp://yuvzailr:H59aEL4rstxeP6nJm5Tzt71yeymhPOhM@elephant.rmq.cloudamqp.com/yuvzailr";
+	amqp.connect(url, function (err, conn) {
+		if (err !== null) {
+			console.log(err);
+		} else {
+			conn.createChannel(function (err, ch) {
+				var queueName = "listen_for_goal";
+				ch.assertQueue(queueName, { durable: false });
+				ch.consume(queueName, function (msg) {
+					updatePlayerScore(msg.content.toString());
+				}, { noAck: true });
+			});
+		}
+	});
+});
+
+/**
+ * Close socket.io and stop listening for requests
+ */
+app.use([apiRoute + 'queue/startSocket'], function() {
+	console.log('TODO');
+});
 
 httpServer.listen(process.env.VCAP_APP_PORT || 5000, function () {
 	console.log ('Server started on port: ' + httpServer.address().port);

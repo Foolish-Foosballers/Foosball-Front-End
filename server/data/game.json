@@ -2,10 +2,22 @@
   "game": {
     "numPlayers": 2,
     "type": "Single",
-    "blackPlayers": null,
-    "blackScore": 0,
+    "blackPlayers": [
+      {
+        "key": 1,
+        "SSO": "1234",
+        "pin": ""
+      }
+    ],
+    "blackScore": 9,
     "yellowScore": 0,
-    "gameInProgress": false,
-    "yellowPlayers": null
+    "gameInProgress": true,
+    "yellowPlayers": [
+      {
+        "key": 1,
+        "SSO": "123",
+        "pin": ""
+      }
+    ]
   }
 }

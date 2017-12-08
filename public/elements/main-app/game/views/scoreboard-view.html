@@ -7,61 +7,103 @@
 
 <dom-module id="scoreboard-view">
   <template>
-    <h1>Scoreboard</h1>
-    <!-- Black Team -->
-    <p>Black team: {{game.blackScore}}</p>
-    
-    <!-- Yellow Team -->
-    <p>Yellow team: {{game.yellowScore}}</p>
+    <!-- STATE: Page is loading -->
+    <template is="dom-if" if="{{pageIsLoading}}">
+      <px-progress-bar
+        value="100"
+        min="0"
+        max="100"
+        infinite>
+      </px-progress-bar>
+    </template>
+
+    <!-- STATE: Page is not loading -->
+    <template is="dom-if" if="{{!pageIsLoading}}">
+      <!-- STATE: Page is not loading and has an error -->
+      <template is="dom-if" if="{{pageHasError}}">
+        <div role="error" id="container--error">
+          <h1>Error receiving data</h1>
+          <p>Please report the following error message <a target="_blank" href="https://github.com/Foolish-Foosballers/Foosball-Front-End/issues">here</a>.</p>
+          <div id="container--error-message">{{error}}</div>
+        </div>
+      </template>
+      
+      <!-- STATE: Page is not loading and does not have an error -->
+      <template is="dom-if" if="{{!pageHasError}}">
+        <h1>Scoreboard</h1>
+
+        <!-- Black Team -->
+        <p>Black team: {{gameObject.blackScore}}</p>
+        
+        <!-- Yellow Team -->
+        <p>Yellow team: {{gameObject.yellowScore}}</p>
+      </template>
+    </template>
 
     <!-- Network requests -->
+    <iron-ajax  
+      auto
+      id="req-get-gameObj" 
+      method="get"
+      url="/api/v1/game/" 
+      handle-as="json"
+      on-response="_handleGetGameObj" 
+      on-error="_handleNetworkError">
+    </iron-ajax>
     <iron-ajax 
       id="req-start-socket" 
       url="http://localhost:5000/api/v1/queue/startSocket" 
       on-response="_handleStartSocketRequest" 
-      on-error="_handleRequestError">
+      on-error="_handleNetworkError">
     </iron-ajax>
     <iron-ajax 
       id="req-close-socket" 
       url="http://localhost:5000/api/v1/queue/closeSocket" 
       on-response="_handleCloseSocketRequest" 
-      on-error="_handleRequestError">
+      on-error="_handleNetworkError">
     </iron-ajax>
   </template>
   <script>
     Polymer({
       is: 'scoreboard-view',
       
-      properties: { },
+      properties: { 
+        pageIsLoading: {type: Boolean, value: true},
 
-      ready: function() {
-        // console.log(this.game);
-        // if (this.game == undefined) {
-        //   this.set("route.path", "/lobby");
-        // } else if (this.game.gameInProgress === false) {
-        //   this.set("route.path", "/lobby");
-        // } else {
-        //   this._startGame();
-        // }   
-      },
-      
-      attached: function() {
-        // console.log(this.game);
-        // if (this.game == undefined) {
-        //   this.set("route.path", "/lobby");
-        // } else if (this.game.gameInProgress === false) {
-        //   this.set("route.path", "/lobby");
-        // } else {
-        //   this._startGame();
-        // }
+        pageHasError: { value: Boolean, value: false },
+
+        gameObjectReceived: {type: Boolean, value: false},
+
+        error: { type: String, value: "" },
+
+        gameObject: { type: Object, value: {} }
       },
 
       _startGame: function() {
         console.log("game started");
 
-        // let request = document.getElementById("req-start-socket");
-        // request.generateRequest();
-        // this._startSocket();
+        this._startSocket();
+        let request = document.getElementById("req-start-socket");
+        request.generateRequest();
+      },
+
+      _loadPageContent: function() {
+        if(this.gameObjectReceived === true) {
+          this._startGame();
+          this.pageIsLoading = false;
+          console.log(this.gameObject);
+        }
+      },
+
+      /**
+       * Get and set the gameObject
+       * 
+       * @param data is the response body received from the server
+       */    
+       _handleGetGameObj: function(data) {
+        this.set("gameObject", data.detail.response.game);
+        this.set("gameObjectReceived", true);
+        this._loadPageContent();
       },
 
       _handleStartSocketRequest: function() {
@@ -72,19 +114,25 @@
         console.log("closed");
       },
 
-      _handleRequestError: function() {
-        console.log("error");
+      /**
+       * If there is a network request error notify the user
+       * 
+       * @param data is the the response body received from the server
+       */
+       _handleNetworkError: function(data) {
+        this.set("pageHasError", true);
+        this.set("error", data.detail.error + ' - ' + data.detail.request.baseURI);
+        this.set("pageIsLoading", false);
       },
 
       _startSocket: function() {
         let _this = this;
         var socket = io.connect('http://localhost:3080');
-        socket.on('new-item', function (data) {
-          if (data == "L" || data == "l") {
-            _this.set("game.blackScore", _this.game.blackScore + 1);
-          }
-          else if (data == "R" || data == "r") {
-            _this.set("game.yellowScore", _this.game.yellowScore + 1);
+        console.log("socket started. Waiting for data");
+        socket.on('update-game-object', function (data) {
+          console.log("data received: " + data);
+          if (data === "3") {
+            console.log("update the data");
           }
         });
       }

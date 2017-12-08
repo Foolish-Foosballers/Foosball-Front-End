@@ -1,0 +1,15 @@
+// ///////////////////////////////////////////////////
+// Error
+// ///////////////////////////////////////////////////
+[role=error] {
+  text-align: center;
+
+  #container--error-message {
+    text-align: left;
+    padding: 10px;
+    margin: auto;
+    width: 300px;
+    background-color: #BEBEBE;
+    min-height: 100px;
+  }
+}

@@ -129,11 +129,20 @@ app.use([apiRoute + 'queue/startSocket'], function() {
 			console.log(err);
 		} else {
 			conn.createChannel(function (err, ch) {
-				var queueName = "listen_for_goal";
-				ch.assertQueue(queueName, { durable: false });
-				ch.consume(queueName, function (msg) {
-					updatePlayerScore(msg.content.toString());
-				}, { noAck: true });
+				ch.assertExchange("goalScored", 'fanout', {durable:false});
+				ch.assertQueue('', { exclusive: true }, function(err, q) {
+					console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q.queue);
+					ch.bindQueue(q.queue, "goalScored", ''); // bind queue to goalScored exchange
+					ch.consume(q.queue, function(msg) { 
+						console.log(msg.content.toString());
+						updatePlayerScore(msg.content.toString());
+					}, { noAck: true });
+				});
+				// var queueName = "listen_for_goal";
+				// ch.assertQueue(queueName, { durable: false });
+				// ch.consume(queueName, function (msg) {
+				// 	updatePlayerScore(msg.content.toString());
+				// }, { noAck: true });
 			});
 		}
 	});

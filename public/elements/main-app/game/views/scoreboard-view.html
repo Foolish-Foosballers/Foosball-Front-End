@@ -37,6 +37,8 @@
         
         <!-- Yellow Team -->
         <p>Yellow team: {{gameObject.yellowScore}}</p>
+
+        <button on-tap="_updateGame">Update</button>
       </template>
     </template>
 
@@ -89,10 +91,16 @@
 
       _loadPageContent: function() {
         if(this.gameObjectReceived === true) {
-          this._startGame();
+          //this._startGame();
           this.pageIsLoading = false;
-          console.log(this.gameObject);
         }
+      },
+
+      _updateGame: function() {
+        this.set("pageIsLoading", true);
+        console.log("tapped");
+        let request = document.getElementById("req-get-gameObj");
+        request.generateRequest();
       },
 
       /**
@@ -101,6 +109,7 @@
        * @param data is the response body received from the server
        */    
        _handleGetGameObj: function(data) {
+         console.log("got the game object");
         this.set("gameObject", data.detail.response.game);
         this.set("gameObjectReceived", true);
         this._loadPageContent();
@@ -133,6 +142,8 @@
           console.log("data received: " + data);
           if (data === "3") {
             console.log("update the data");
+            let request = document.getElementById("req-get-gameObj");
+            request.generateRequest();
           }
         });
       }

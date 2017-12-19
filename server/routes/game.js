@@ -65,6 +65,29 @@ router.put(['/'], function(req, res) {
   }
 });
 
+// Restart Game
+router.get(['/restartGame'], function(req, res) {
+  console.log("restarting game");
+  let updateGameObj = gameObj;
+  let game = updateGameObj.game;
+  game.blackPlayers = null;
+  game.yellowPlayers = null;
+  game.blackScore = 0;
+  game.yellowScore = 0;
+  game.gameInProgress = false;
+  updateGameObj.game = game;
+  console.log(updateGameObj.game);
+  fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
+    if (err) {
+      console.log(err);
+      res.json({status: 202});
+    }
+    else {
+      res.json({status: 200});
+    }
+  });
+});
+
 // TODO
 router.put(['/numPlayers'], function(req, res) { 
   console.log("todo");
@@ -89,7 +112,7 @@ router.put(['/yellowPlayers'], function(req, res) {
 router.put(['/updateBlackScore'], function(req, res) {
   if (req.body.value != undefined) {
     let updateGameObj = gameObj;
-    updateGameObj.game.blackScore = parseInt(gameObj.game.blackScore  + req.body.value);
+    updateGameObj.game.blackScore = parseInt(gameObj.game.blackScore  + 1);
     fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function (err) {
       if (err) {
         console.log(err);
@@ -107,7 +130,7 @@ router.put(['/updateBlackScore'], function(req, res) {
 router.put(['/updateYellowScore'], function(req, res) {
   if (req.body.value != undefined) {
     let updateGameObj = gameObj;
-    updateGameObj.game.yellowScore = parseInt(gameObj.game.yellowScore + req.body.value);
+    updateGameObj.game.yellowScore = parseInt(gameObj.game.yellowScore + 1);
     fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function (err) {
       if (err) {
         console.log(err);

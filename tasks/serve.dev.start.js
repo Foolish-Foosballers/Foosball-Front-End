@@ -9,7 +9,7 @@ module.exports = function() {
   return function() {
     nodemon({
         script: 'server/app.js',
-        ignore: ['/../public/*'],
+        ignore: ['/../public/*', 'server/data/game.json'],
         env: { 'base-dir' : '/../public'}
       })
       .on('restart', function() {

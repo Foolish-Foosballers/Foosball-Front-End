@@ -10,9 +10,7 @@ var express = require('express');
 var http = require('http'); // needed to integrate with ws package for mock web socket server.
 var app = express();
 var httpServer = http.createServer(app);
-// var config = require("./config.js");
-var socketio = require("socket.io");
-var io = socketio.listen(3080);
+var io = require("socket.io")(httpServer);
 var path = require('path');
 var request = require('request');
 var apiRoute = '/api/v1/';
@@ -69,7 +67,7 @@ app.use(function(err, req, res, next) {
 });
 
 /****************************************************************************
-	Message Queue
+	Routes
 *****************************************************************************/
 // Import the routes
 var gameRouter = require('./routes/game.js');
@@ -77,6 +75,9 @@ var gameRouter = require('./routes/game.js');
 // Use the routes
 app.use([apiRoute + 'game/'], gameRouter);
 
+/****************************************************************************
+	Message Queue
+*****************************************************************************/
 /**
  * Clear all leftover data in the queue
  */
@@ -91,7 +92,7 @@ app.use([apiRoute + 'queue/clearSocket'], function() {
  */
 function updatePlayerScore(val) {
 	let url = "http://localhost:5000/api/v1/game/update";
-	
+
 	switch (val) {
 		case "1":
 			url = url + "BlackScore"
@@ -131,18 +132,11 @@ app.use([apiRoute + 'queue/startSocket'], function() {
 			conn.createChannel(function (err, ch) {
 				ch.assertExchange("goalScored", 'fanout', {durable:false});
 				ch.assertQueue('', { exclusive: true }, function(err, q) {
-					console.log(" [*] Waiting for messages in %s. To exit press CTRL+C", q.queue);
 					ch.bindQueue(q.queue, "goalScored", ''); // bind queue to goalScored exchange
 					ch.consume(q.queue, function(msg) { 
-						console.log(msg.content.toString());
 						updatePlayerScore(msg.content.toString());
 					}, { noAck: true });
 				});
-				// var queueName = "listen_for_goal";
-				// ch.assertQueue(queueName, { durable: false });
-				// ch.consume(queueName, function (msg) {
-				// 	updatePlayerScore(msg.content.toString());
-				// }, { noAck: true });
 			});
 		}
 	});

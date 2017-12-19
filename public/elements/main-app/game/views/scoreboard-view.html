@@ -3,10 +3,27 @@
 
 <!-- Networking -->
 <link rel="import" href="../../../../bower_components/iron-ajax/iron-ajax.html"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<!-- Styles -->
+<link rel="import" href="../game-app-styles.html">
+<link rel="import" href="./styles/scoreboard-view-styles.html">
+
+<!-- Predix components -->
+<link rel="import" href="../../../../bower_components/px-modal/px-modal.html"/>
+
+<!-- Bootstrap -->
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Font awesome -->
+<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
 
 <dom-module id="scoreboard-view">
   <template>
+    <!-- Local theme -->
+    <style include="game-app-styles" is="custom-style"></style>
+    <style include="scoreboard-view-styles" is="custom-style"></style>
+
     <!-- STATE: Page is loading -->
     <template is="dom-if" if="{{pageIsLoading}}">
       <px-progress-bar
@@ -27,20 +44,85 @@
           <div id="container--error-message">{{error}}</div>
         </div>
       </template>
-      
-      <!-- STATE: Page is not loading and does not have an error -->
-      <template is="dom-if" if="{{!pageHasError}}">
-        <h1>Scoreboard</h1>
+    
+    <!-- STATE: Page is not loading and does not have an error -->
+    <template is="dom-if" if="{{!pageHasError}}">
+      <body>
+      <div class="container container-fluid">
+          
+        <!-- Scoreboard -->
+        <div id="container--scoreboard">
 
-        <!-- Black Team -->
-        <p>Black team: {{gameObject.blackScore}}</p>
-        
-        <!-- Yellow Team -->
-        <p>Yellow team: {{gameObject.yellowScore}}</p>
+          <!-- Black side -->
+          <div id="container--player-scoreboard">
+            <div id="container--player-details">
+              <p>
+                <i class="fa fa-circle" aria-hidden="true" id="icon--black"></i>
+                <span id="black--name" class="name"></span>
+              </p>
+            </div>
+            <p id="black--score" class="score">{{gameObject.blackScore}}</p>
+          </div>
 
-        <button on-tap="_updateGame">Update</button>
-      </template>
+          <!-- Menu -->
+          <div id="menu">
+              <div id="menu--timer">
+                <span id="minutes">00</span>:<span id="seconds">00</span> 
+              </div>
+              <div id="menu--options">
+                <a id="button--restart-game" on-tap="_restartGame" class="game-option"><i class="fa fa-repeat fa-3x" aria-hidden="true"></i></a>
+                <a id="pause-play" class="game-option"><i class="fa fa-pause fa-3x" aria-hidden="true"></i></a>
+                <form id="quit--form" action="/" class="game-option">
+                  <a id="button--quit-game" class="game-option"><i class="fa fa-sign-out fa-3x" aria-hidden="true"></i></a>
+                </form>
+              </div> 
+
+              <px-modal
+                btn-modal-positive="Confirm Changes"
+                btn-modal-negative="Cancel"
+                modal-heading="Edit player names and scores below.">
+                <button id="button--edit-game" type="button" class="menu-button btn btn btn--primary modal-trigger">Edit</button>
+                <div class="modal-body">
+                  <div class="modal-row">
+                    <div class="modal-col">
+                        <label for="black-name--modal"><i class="fa fa-circle" aria-hidden="true" id="icon--black"></i> <span id="black-name--modal">Black</span></label>
+                        <input name="black-name--modal" type="text" class="form-control">
+                    </div>                
+                    <div class="modal-col">
+                        <label for="yellow-name--modal"><i class="fa fa-circle" aria-hidden="true" id="icon--yellow"></i> <span id="yellow-name--modal">Yellow</span></label>
+                        <input name="yellow-name--modal" type="text" class="form-control">
+                    </div>
+                  </div>
+                  <div class="modal-row">
+                    <div class="modal-col">
+                        <input name="black-score--modal" type="text" value="{{gameObject.blackScore}}" class="form-control">
+                    </div>
+                    <div class="modal-col">
+                      <input name="yellow-score--modal" type="text" value="{{gameObject.yellowScore}}" class="form-control">
+                    </div>                
+                  </div>
+                </div>
+              </px-modal>
+
+              <button id="button--save-game" type="button" class="menu-button btn btn--call-to-action btn--disabled">Save</button>
+            </div>
+
+            <!-- Yellow side -->
+            <div id="container--player-scoreboard">
+              <div id="container--player-details">
+                <p>
+                  <i class="fa fa-circle" aria-hidden="true" id="icon--yellow"></i>
+                  <span id="yellow--name" class="name"></span>
+                </p>
+              </div>
+              <p id="yellow--score" class="score">{{gameObject.yellowScore}}</p>
+            </div>
+          </div>
+      </div>
+    </body>
+      <button on-tap="_updateGame">Update</button>
     </template>
+  </template>
 
     <!-- Network requests -->
     <iron-ajax  
@@ -53,17 +135,19 @@
       on-error="_handleNetworkError">
     </iron-ajax>
     <iron-ajax 
+      auto
       id="req-start-socket" 
       url="http://localhost:5000/api/v1/queue/startSocket" 
       on-response="_handleStartSocketRequest" 
       on-error="_handleNetworkError">
     </iron-ajax>
     <iron-ajax 
-      id="req-close-socket" 
-      url="http://localhost:5000/api/v1/queue/closeSocket" 
-      on-response="_handleCloseSocketRequest" 
-      on-error="_handleNetworkError">
-    </iron-ajax>
+    id="req-restart-game" 
+    method="get"
+    url="/api/v1/game/restartGame"
+    on-response="_handleCloseSocketRequest" 
+    on-error="_handleNetworkError">
+  </iron-ajax>
   </template>
   <script>
     Polymer({
@@ -78,20 +162,23 @@
 
         error: { type: String, value: "" },
 
-        gameObject: { type: Object, value: {} }
+        gameObject: { type: Object, value: {} },
+
+        socket: { type: Object, value: null }
       },
 
-      _startGame: function() {
-        console.log("game started");
+      // _startGame: function() {
+      //   console.log("game started");
 
-        this._startSocket();
-        let request = document.getElementById("req-start-socket");
-        request.generateRequest();
-      },
+      //   this._startSocket();
+      //   let request = document.getElementById("req-start-socket");
+      //   request.generateRequest();
+      // },
 
       _loadPageContent: function() {
         if(this.gameObjectReceived === true) {
-          //this._startGame();
+          // this._startGame();
+          this._startSocket();
           this.pageIsLoading = false;
         }
       },
@@ -101,6 +188,28 @@
         console.log("tapped");
         let request = document.getElementById("req-get-gameObj");
         request.generateRequest();
+      },
+
+      _checkGameState: function(game) {
+        if (game.yellowScore >= 5 && game.yellowScore - game.blackScore >= 2) {
+          console.log("yellow wins");
+        }
+
+        else if (game.blackScore >= 5 && game.blackScore - game.yellowScore >= 2) {
+          console.log("black wins");
+        }
+      },
+
+      _restartGame: function() {
+        this.gameObject.blackScore = 0;
+        this.gameObject.yellowScore = 0;
+        let request = document.getElementById("req-restart-game");
+        request.generateRequest();
+        // game.blackScore = 0;
+        // game.yellowScore = 0;
+        // game.yellowPlayers = null;
+        // game.blackPlayers = null;
+
       },
 
       /**
@@ -113,6 +222,7 @@
         this.set("gameObject", data.detail.response.game);
         this.set("gameObjectReceived", true);
         this._loadPageContent();
+        this._checkGameState(data.detail.response.game);
       },
 
       _handleStartSocketRequest: function() {
@@ -135,17 +245,15 @@
       },
 
       _startSocket: function() {
-        let _this = this;
-        var socket = io.connect('http://localhost:3080');
-        console.log("socket started. Waiting for data");
-        socket.on('update-game-object', function (data) {
-          console.log("data received: " + data);
-          if (data === "3") {
-            console.log("update the data");
-            let request = document.getElementById("req-get-gameObj");
-            request.generateRequest();
-          }
-        });
+        if (this.socket === null) {
+          let _this = this;
+          this.set("socket", io.connect('http://localhost:5000'));
+          this.socket.on('update-game-object', function (data) {
+            if (data === "3") {
+              _this._updateGame();
+            }
+          });
+        }
       }
     });
   </script>

@@ -136,26 +136,25 @@
       on-error="_handleNetworkError">
     </iron-ajax>
     <iron-ajax 
-      auto
       id="req-start-socket" 
       url="http://localhost:5000/api/v1/queue/startSocket" 
       on-response="_handleStartSocketRequest" 
       on-error="_handleNetworkError">
     </iron-ajax>
     <iron-ajax 
-    id="req-restart-game" 
-    method="get"
-    url="/api/v1/game/restartGame"
-    on-response="_handleGetGameObj" 
-    on-error="_handleNetworkError">
-  </iron-ajax>
-  <iron-ajax 
-  id="req-quit-game" 
-  method="get"
-  url="/api/v1/game/quitGame"
-  on-response="_handleQuitGame" 
-  on-error="_handleNetworkError">
-</iron-ajax>
+      id="req-restart-game" 
+      method="get"
+      url="/api/v1/game/restartGame"
+      on-response="_handleGetGameObj" 
+      on-error="_handleNetworkError">
+    </iron-ajax>
+    <iron-ajax 
+      id="req-quit-game" 
+      method="get"
+      url="/api/v1/game/quitGame"
+      on-response="_handleQuitGame" 
+      on-error="_handleNetworkError">
+    </iron-ajax>
 
   </template>
   <script>
@@ -175,7 +174,7 @@
 
         socket: { type: Object, value: null },
 
-        timer: { type: Object, value: {"minutes": "00", "seconds": "58"}},
+        timer: { type: Object, value: {"minutes": "00", "seconds": "00"} },
 
         gamePaused: { type: Boolean, value: false},
 
@@ -186,7 +185,7 @@
         console.log("game started");
         this._startTime();
 
-      //   this._startSocket();
+        this._startSocket();
       //   let request = document.getElementById("req-start-socket");
       //   request.generateRequest();
       },
@@ -304,10 +303,13 @@
       },
 
       _startSocket: function() {
+        console.log('starting socket');
         if (this.socket === null) {
+          console.log("hhsadk;fj");
           let _this = this;
           this.set("socket", io.connect('http://localhost:5000'));
           this.socket.on('update-game-object', function (data) {
+            console.log("got goal");
             if (data === "3") {
               _this._updateGame();
             }

@@ -4,6 +4,8 @@ var router = express.Router();
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var _ = require("underscore");
+var request = require('request');
+var node_env = process.env.node_env || 'development';
 
 router.use(bodyParser.json());
 const gameObj = require(path.resolve(__dirname, '../data/game.json'));
@@ -52,11 +54,27 @@ router.put(['/'], function(req, res) {
   if (req.body.game != undefined) {
     let updateGameObj = gameObj;
     updateGameObj.game = req.body.game;
+    updateGameObj.game.startTime = Date.now();
+    updateGameObj.game.duration = 0;
     fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function (err) {
       if (err) {
         console.log(err);
         res.json({status: 202});
       } else {
+        //Create a connection to the message queue
+        let url = "";
+        if (node_env === 'development') {
+          url = "http://localhost:5000/api/v1/queue/startQueue";
+        } else {
+          url = "https://foosball-front-end.run.asv-pr.ice.predix.io/api/v1/queue/startQueue";
+        }
+        request.get({
+			    url: url,
+			    method: "GET"
+		    }, function(error, response, body) {
+          // ERRORR handling here
+          console.log(error);
+		    });	
         res.json({status: 200})
       }
     });
@@ -66,17 +84,41 @@ router.put(['/'], function(req, res) {
 });
 
 // Restart Game
+// TODO: Handle restarting time 
 router.get(['/restartGame'], function(req, res) {
   console.log("restarting game");
   let updateGameObj = gameObj;
   let game = updateGameObj.game;
-  game.blackPlayers = null;
-  game.yellowPlayers = null;
+  game.blackScore = 0;
+  game.yellowScore = 0;
+  game.gameInProgress = true;
+  updateGameObj.game = game;
+  
+  fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
+    if (err) {
+      console.log(err);
+      res.json({status: 202});
+    }
+    else {
+      console.log(updateGameObj.game);
+      res.json({status: 200, game: updateGameObj.game});
+    }
+  });
+});
+
+// Quit Game
+// TODO: Handle restarting time 
+router.get(['/quitGame'], function(req, res) {
+  console.log("quit game");
+  let updateGameObj = gameObj;
+  let game = updateGameObj.game;
   game.blackScore = 0;
   game.yellowScore = 0;
   game.gameInProgress = false;
+  game.yellowPlayers = null;
+  game.blackPlayers = null;
   updateGameObj.game = game;
-  console.log(updateGameObj.game);
+  
   fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
     if (err) {
       console.log(err);

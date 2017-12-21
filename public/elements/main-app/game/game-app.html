@@ -101,13 +101,11 @@
          // Decide what view to show
         if (this.gameObjectReceived === true) {
           if (this.gameObject.gameInProgress === false) {
-            console.log("showing lobby");
             this.set("route.path", "/lobby");
             this.set("showScoreboard", false);
             this.set("showError", false);
             this.set("showLobby", true);
           } else if (this.gameObject.gameInProgress === true) {
-            console.log("showing scoreboard");
             this.set("route.path", "/scoreboard");
             this.set("showError", false);
             this.set("showLobby", false);

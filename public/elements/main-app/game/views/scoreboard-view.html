@@ -3,7 +3,8 @@
 
 <!-- Networking -->
 <link rel="import" href="../../../../bower_components/iron-ajax/iron-ajax.html"/>
-<script src="/socket.io/socket.io.js"></script>
+<!-- <script src="/socket.io/socket.io.js"></script> -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.slim.js"></script>
 
 <!-- Styles -->
 <link rel="import" href="../game-app-styles.html">
@@ -67,13 +68,13 @@
           <!-- Menu -->
           <div id="menu">
               <div id="menu--timer">
-                <span id="minutes">00</span>:<span id="seconds">00</span> 
+                <span id="minutes">{{timer.minutes}}</span>:<span id="seconds">{{timer.seconds}}</span> 
               </div>
               <div id="menu--options">
                 <a id="button--restart-game" on-tap="_restartGame" class="game-option"><i class="fa fa-repeat fa-3x" aria-hidden="true"></i></a>
                 <a id="pause-play" class="game-option"><i class="fa fa-pause fa-3x" aria-hidden="true"></i></a>
                 <form id="quit--form" action="/" class="game-option">
-                  <a id="button--quit-game" class="game-option"><i class="fa fa-sign-out fa-3x" aria-hidden="true"></i></a>
+                  <a id="button--quit-game" on-tap="_quitGame" class="game-option"><i class="fa fa-sign-out fa-3x" aria-hidden="true"></i></a>
                 </form>
               </div> 
 
@@ -145,9 +146,17 @@
     id="req-restart-game" 
     method="get"
     url="/api/v1/game/restartGame"
-    on-response="_handleCloseSocketRequest" 
+    on-response="_handleGetGameObj" 
     on-error="_handleNetworkError">
   </iron-ajax>
+  <iron-ajax 
+  id="req-quit-game" 
+  method="get"
+  url="/api/v1/game/quitGame"
+  on-response="_handleQuitGame" 
+  on-error="_handleNetworkError">
+</iron-ajax>
+
   </template>
   <script>
     Polymer({
@@ -164,21 +173,28 @@
 
         gameObject: { type: Object, value: {} },
 
-        socket: { type: Object, value: null }
+        socket: { type: Object, value: null },
+
+        timer: { type: Object, value: {"minutes": "00", "seconds": "58"}},
+
+        gamePaused: { type: Boolean, value: false},
+
+        gameOver: { type: Boolean, value: false}
       },
 
-      // _startGame: function() {
-      //   console.log("game started");
+      _startGame: function() {
+        console.log("game started");
+        this._startTime();
 
       //   this._startSocket();
       //   let request = document.getElementById("req-start-socket");
       //   request.generateRequest();
-      // },
+      },
 
       _loadPageContent: function() {
         if(this.gameObjectReceived === true) {
-          // this._startGame();
-          this._startSocket();
+          this._startGame();
+          // this._startSocket();
           this.pageIsLoading = false;
         }
       },
@@ -200,15 +216,58 @@
         }
       },
 
+      _startTime: function() {
+        if(!this.gamePaused && !this.gameOver) {
+          let seconds = this.timer.seconds;
+          let minutes = this.timer.minutes;
+          seconds++;
+
+          if (seconds == 60){
+            minutes++;
+            seconds = 0;
+          }
+
+          // Format the time
+          this.set("timer.minutes", this._formatTime(minutes));
+          this.set("timer.seconds", this._formatTime(seconds));
+        
+          // If the game is not paused, update the time
+          var t = setTimeout(this._startTime.bind(this), 1000);
+        }
+      },
+
+      /**
+       * Formats input unit of time with leading zero if less than 10
+       * @param {int} unit 
+       * Return String
+       */
+      _formatTime: function(unit) {
+        var stringUnit = "" + unit;
+        if (unit < 10 && stringUnit.length < 2) {unit = "0" + unit};
+        return unit;
+      },
+
+      /**
+       * Send request to restart game
+       */ 
       _restartGame: function() {
-        this.gameObject.blackScore = 0;
-        this.gameObject.yellowScore = 0;
         let request = document.getElementById("req-restart-game");
         request.generateRequest();
-        // game.blackScore = 0;
-        // game.yellowScore = 0;
-        // game.yellowPlayers = null;
-        // game.blackPlayers = null;
+      },
+      
+      /**
+       * Send request to quit game
+       */ 
+      _quitGame: function() {
+        let request = document.getElementById("req-quit-game");
+        request.generateRequest();
+      },
+
+      /**
+       * Return to Lobby
+       */
+       _handleQuitGame: function() {
+        location.reload();
 
       },
 
@@ -218,7 +277,7 @@
        * @param data is the response body received from the server
        */    
        _handleGetGameObj: function(data) {
-         console.log("got the game object");
+        console.log("got the game object");
         this.set("gameObject", data.detail.response.game);
         this.set("gameObjectReceived", true);
         this._loadPageContent();

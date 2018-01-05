@@ -46,6 +46,32 @@ router.get(['/gameInProgress'], function(req, res) {
   res.send({gameInProgress: gameObj.game.gameInProgress});
 });
 
+router.get(['/updateRankings'], function(req, res) {
+  var url = "http://foosball-data-service.herokuapp.com/games"
+  console.log(url);
+  request.get({
+    url: url,
+    method: "GET"
+  }, function(error, response, body) {
+    console.log("got");
+    console.log(body);
+
+    // ERRORR handling here
+  });	
+  console.log("done");
+  // console.log(res);
+  res.json({status: 200})
+})
+
+router.get(['/gameState'], function(req, res) {
+  fs.readFile(path.resolve(__dirname, '../data/game.json'), 'utf-8', function read(err, data) {
+    if (err) {
+      throw err;
+    }
+    res.json({status: 200, state: data});
+  });
+})
+
 // ////////////////////////////////////////////////////////////////////////
 // PUT
 // ////////////////////////////////////////////////////////////////////////
@@ -56,6 +82,7 @@ router.put(['/'], function(req, res) {
     updateGameObj.game = req.body.game;
     updateGameObj.game.startTime = Date.now();
     updateGameObj.game.duration = 0;
+    updateGameObj.game.activated = false;
     fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function (err) {
       if (err) {
         console.log(err);
@@ -83,6 +110,27 @@ router.put(['/'], function(req, res) {
   }
 });
 
+router.put(['/updateTimer'], function(req, res) { 
+  if (req.body.game != undefined) {
+    let updateGameObj = gameObj;
+    updateGameObj.game = req.body.game;
+    updateGameObj.game.activated = true;
+    if (updateGameObj.game.activated) {
+      fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function (err) {
+        if (err) {
+          console.log(err);
+          res.json({status: 202});
+        } 
+        else {	
+          res.json({status: 200, game: updateGameObj.game})
+        }
+      });
+    }
+  } else {
+    res.json({status: 202}); 
+  }
+});
+
 // Restart Game
 // TODO: Handle restarting time 
 router.get(['/restartGame'], function(req, res) {
@@ -91,7 +139,11 @@ router.get(['/restartGame'], function(req, res) {
   let game = updateGameObj.game;
   game.blackScore = 0;
   game.yellowScore = 0;
+  game.duration = 0;
+  game.timer = {"minutes": 0, "seconds": 0};
   game.gameInProgress = true;
+  game.gameRestarted = true;
+  game.gamePaused = false
   updateGameObj.game = game;
   
   fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
@@ -114,9 +166,12 @@ router.get(['/quitGame'], function(req, res) {
   let game = updateGameObj.game;
   game.blackScore = 0;
   game.yellowScore = 0;
+  game.timer = {"minutes": 0, "seconds": 0};
   game.gameInProgress = false;
   game.yellowPlayers = null;
   game.blackPlayers = null;
+  game.gameRestarted = false;
+  game.gamePaused = false;
   updateGameObj.game = game;
   
   fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {

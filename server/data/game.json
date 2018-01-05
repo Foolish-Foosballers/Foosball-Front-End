@@ -5,17 +5,26 @@
     "blackPlayers": [
       {
         "key": 1,
-        "SSO": "1234",
+        "SSO": "2",
         "pin": ""
       }
     ],
-    "blackScore": 5,
-    "yellowScore": 2,
+    "blackScore": 0,
+    "yellowScore": 0,
     "gameInProgress": true,
+    "activated": true,
+    "gameRestarted": true,
+    "gamePaused": false,
+    "startTime": 1515129540168,
+    "duration": 0,
+    "timer": {
+      "minutes": "00",
+      "seconds": 12
+    },
     "yellowPlayers": [
       {
         "key": 1,
-        "SSO": "123",
+        "SSO": "3",
         "pin": ""
       }
     ]

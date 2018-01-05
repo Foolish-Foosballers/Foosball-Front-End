@@ -68,14 +68,14 @@
           <!-- Menu -->
           <div id="menu">
               <div id="menu--timer">
-                <span id="minutes">{{timer.minutes}}</span>:<span id="seconds">{{timer.seconds}}</span> 
+                <span id="minutes">{{gameObject.timer.minutes}}</span>:<span id="seconds">{{gameObject.timer.seconds}}</span> 
               </div>
               <div id="menu--options">
-                <a id="button--restart-game" on-tap="_restartGame" class="game-option"><i class="fa fa-repeat fa-3x" aria-hidden="true"></i></a>
-                <a id="pause-play" class="game-option"><i class="fa fa-pause fa-3x" aria-hidden="true"></i></a>
-                <form id="quit--form" action="/" class="game-option">
-                  <a id="button--quit-game" on-tap="_quitGame" class="game-option"><i class="fa fa-sign-out fa-3x" aria-hidden="true"></i></a>
-                </form>
+                  <a id="button--restart-game" on-tap="_restartGame" class="game-option"><i class="fa fa-repeat fa-3x" aria-hidden="true"></i></a>
+                  <a id="pause-play" class="game-option"><i class="fa fa-pause fa-3x" aria-hidden="true"></i></a>
+                  <form id="quit--form" action="/" class="game-option">
+                    <a id="button--quit-game" on-tap="_quitGame" class="game-option"><i class="fa fa-sign-out fa-3x" aria-hidden="true"></i></a>
+                  </form>
               </div> 
 
               <px-modal
@@ -145,7 +145,7 @@
       id="req-restart-game" 
       method="get"
       url="/api/v1/game/restartGame"
-      on-response="_handleGetGameObj" 
+      on-response="_handleRestartGame" 
       on-error="_handleNetworkError">
     </iron-ajax>
     <iron-ajax 
@@ -155,7 +155,28 @@
       on-response="_handleQuitGame" 
       on-error="_handleNetworkError">
     </iron-ajax>
-
+    <iron-ajax 
+      id="req-update-timer" 
+      method="put"
+      content-type="application/json"
+      url="/api/v1/game/updateTimer"
+      on-error="_handleNetworkError">
+  </iron-ajax>
+  <iron-ajax
+    id="req-update-rankings"
+    method="get"
+    url="/api/v1/game/updateRankings"
+    on-response="_logRankings"
+    on-error="handleNetworkError">
+  </iron-ajax>
+  <iron-ajax
+    id="req-read-game-state"
+    method="get"
+    url="/api/v1/game/gameState"
+    content-type="application/json"
+    on-response="_handleUpdatedTimer"
+    on-error="handleNetworkError">
+</iron-ajax>
   </template>
   <script>
     Polymer({
@@ -178,31 +199,33 @@
 
         gamePaused: { type: Boolean, value: false},
 
-        gameOver: { type: Boolean, value: false}
+        gameOver: { type: Boolean, value: false},
+
+        owner: { type: Boolean, value: false}
       },
 
       _startGame: function() {
-        console.log("game started");
+        console.log("starting game");
+        console.log("starting time");
         this._startTime();
-
-        this._startSocket();
-      //   let request = document.getElementById("req-start-socket");
-      //   request.generateRequest();
+        // this._startSocket();
       },
 
       _loadPageContent: function() {
         if(this.gameObjectReceived === true) {
           this._startGame();
-          // this._startSocket();
           this.pageIsLoading = false;
         }
       },
 
       _updateGame: function() {
-        this.set("pageIsLoading", true);
         console.log("tapped");
-        let request = document.getElementById("req-get-gameObj");
+        let request = document.getElementById("req-update-rankings");
         request.generateRequest();
+      },
+
+      _logRankings: function(data) {
+        console.log(data);
       },
 
       _checkGameState: function(game) {
@@ -216,20 +239,10 @@
       },
 
       _startTime: function() {
-        if(!this.gamePaused && !this.gameOver) {
-          let seconds = this.timer.seconds;
-          let minutes = this.timer.minutes;
-          seconds++;
+        if(!this.gameObject.gamePaused && !this.gameOver) {
+          let request = document.getElementById("req-read-game-state");
+          request.generateRequest();
 
-          if (seconds == 60){
-            minutes++;
-            seconds = 0;
-          }
-
-          // Format the time
-          this.set("timer.minutes", this._formatTime(minutes));
-          this.set("timer.seconds", this._formatTime(seconds));
-        
           // If the game is not paused, update the time
           var t = setTimeout(this._startTime.bind(this), 1000);
         }
@@ -267,20 +280,72 @@
        */
        _handleQuitGame: function() {
         location.reload();
-
       },
 
       /**
-       * Get and set the gameObject
+       * Get and set the gameObject after timer has been updated
+       * 
+       * @param data is the response body received from the server
+       */    
+       _handleUpdatedTimer: function(data) {
+        let state = JSON.parse(data.detail.response.state);
+        let game = state.game;
+        this.set("gameObject", game);
+        this.set("gameObjectReceived", true);
+        console.log(this.gameObject.timer);
+
+        let seconds = this.gameObject.timer.seconds;
+          let minutes = this.gameObject.timer.minutes;
+          seconds++;
+
+          if (seconds == 60){
+            minutes++;
+            seconds = 0;
+          }
+
+          // Format the time
+          this.set("gameObject.timer.minutes", this._formatTime(minutes));
+          this.set("gameObject.timer.seconds", this._formatTime(seconds));
+          console.log(this.gameObject.timer);
+          // If the game is not paused, update the time
+          console.log("updated time");
+
+          if (this.owner) {
+            let request = document.getElementById("req-update-timer");
+            request.body = {"game":this.gameObject};
+            request.generateRequest();
+          }
+      },
+
+      /**
+       * Get and set the gameObject on initial load of game or restart
+       * 
+       * @param data is the response body received from the server
+       */    
+       _handleRestartGame: function(data) {
+        this.set("gameObject", data.detail.response.game);
+        this.set("gameObjectReceived", true);
+      },
+
+      /**
+       * Get and set the gameObject on initial load of game or restart
        * 
        * @param data is the response body received from the server
        */    
        _handleGetGameObj: function(data) {
-        console.log("got the game object");
-        this.set("gameObject", data.detail.response.game);
-        this.set("gameObjectReceived", true);
-        this._loadPageContent();
-        this._checkGameState(data.detail.response.game);
+         console.log("handling game obj");
+         if (data.detail.response.game.activated) {
+           console.log("not the owner");
+           this.set("owner", false);
+         }
+         else {
+           console.log("the owner");
+           this.set("owner", true);
+         }
+          this.set("gameObject", data.detail.response.game);
+          this.set("gameObjectReceived", true);
+          this._loadPageContent();
+          this._checkGameState(data.detail.response.game);
       },
 
       _handleStartSocketRequest: function() {

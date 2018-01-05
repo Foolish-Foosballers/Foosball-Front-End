@@ -92,7 +92,7 @@ function updatePlayerScore(val) {
                 io.io.sockets.emit("update-game-object", '3');
 			}
 		});	
-	}
+    }
 }
 
 module.exports = router;

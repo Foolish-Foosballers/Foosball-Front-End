@@ -72,74 +72,7 @@ router.get(['/gameState'], function(req, res) {
   });
 })
 
-// Restart Game
-router.get(['/restartGame'], function(req, res) {
-  console.log("restarting game");
-  let updateGameObj = gameObj;
-  let game = updateGameObj.game;
-  game.blackScore = 0;
-  game.yellowScore = 0;
-  game.duration = 0;
-  game.timer = {"minutes": 0, "seconds": 0};
-  game.gameInProgress = true;
-  game.gameRestarted = true;
-  game.gamePaused = false
-  updateGameObj.game = game;
-  
-  fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
-    if (err) {
-      console.log(err);
-      res.json({status: 202});
-    }
-    else {
-      console.log(updateGameObj.game);
-      res.json({status: 200, game: updateGameObj.game});
-    }
-  });
-});
 
-router.get(['/togglePlay'], function(req, res) {
-  console.log("toggle play");
-  let updateGameObj = gameObj;
-  let game = updateGameObj.game;
-  game.gamePaused = !game.gamePaused
-  updateGameObj.game = game;
-  fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
-    if (err) {
-      console.log(err);
-      res.json({status: 202});
-    }
-    else {
-      res.json({status: 200, game: updateGameObj.game});
-    }
-  });
-})
-
-// Quit Game
-router.get(['/quitGame'], function(req, res) {
-  console.log("quit game");
-  let updateGameObj = gameObj;
-  let game = updateGameObj.game;
-  game.blackScore = 0;
-  game.yellowScore = 0;
-  game.timer = {"minutes": 0, "seconds": 0};
-  game.gameInProgress = false;
-  game.yellowPlayers = null;
-  game.blackPlayers = null;
-  game.gameRestarted = false;
-  game.gamePaused = false;
-  updateGameObj.game = game;
-  
-  fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
-    if (err) {
-      console.log(err);
-      res.json({status: 202});
-    }
-    else {
-      res.json({status: 200});
-    }
-  });
-});
 
 // ////////////////////////////////////////////////////////////////////////
 // PUT
@@ -198,6 +131,72 @@ router.put(['/updateTimer'], function(req, res) {
   } else {
     res.json({status: 202}); 
   }
+});
+
+// Restart Game
+router.put(['/restartGame'], function(req, res) {
+  let updateGameObj = gameObj;
+  let game = updateGameObj.game;
+  game.blackScore = 0;
+  game.yellowScore = 0;
+  game.duration = 0;
+  game.timer = {"minutes": 0, "seconds": 0};
+  game.gameInProgress = true;
+  game.gameRestarted = true;
+  game.gamePaused = false;
+  updateGameObj.game = game;
+  
+  fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
+    if (err) {
+      console.log(err);
+      res.json({status: 202});
+    }
+    else {
+      console.log(updateGameObj.game);
+      res.json({status: 200, game: updateGameObj.game});
+    }
+  });
+});
+
+router.put(['/togglePlay'], function(req, res) {
+  let updateGameObj = gameObj;
+  let game = updateGameObj.game;
+  game.gamePaused = req.body;
+  updateGameObj.game = game;
+  fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
+    if (err) {
+      console.log(err);
+      res.json({status: 202});
+    }
+    else {
+      res.json({status: 200, game: updateGameObj.game});
+    }
+  });
+})
+
+// Quit Game
+router.put(['/quitGame'], function(req, res) {
+  let updateGameObj = gameObj;
+  let game = updateGameObj.game;
+  game.blackScore = 0;
+  game.yellowScore = 0;
+  game.timer = {"minutes": 0, "seconds": 0};
+  game.gameInProgress = false;
+  game.yellowPlayers = null;
+  game.blackPlayers = null;
+  game.gameRestarted = false;
+  game.gamePaused = false;
+  updateGameObj.game = game;
+  
+  fs.writeFile(path.resolve(__dirname, '../data/game.json'), JSON.stringify(updateGameObj, null, 2), function(err) {
+    if (err) {
+      console.log(err);
+      res.json({status: 202});
+    }
+    else {
+      res.json({status: 200});
+    }
+  });
 });
 
 // TODO

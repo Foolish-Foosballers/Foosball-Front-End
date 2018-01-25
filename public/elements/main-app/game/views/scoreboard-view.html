@@ -79,10 +79,12 @@
               </div> 
 
               <px-modal
+                id="editModal"
                 btn-modal-positive="Confirm Changes"
                 btn-modal-negative="Cancel"
+                btn-modal-negative-clicked-event-name="cancel-changes"
                 modal-heading="Edit player names and scores below.">
-                <button id="button--edit-game" type="button" class="menu-button btn btn btn--primary modal-trigger">Edit</button>
+                <button id="button--edit-game" type="button" on-tap="_handleOpenModal" class="menu-button btn btn btn--primary modal-trigger">Edit</button>
                 <div class="modal-body">
                   <div class="modal-row">
                     <div class="modal-col">
@@ -143,21 +145,22 @@
     </iron-ajax>
     <iron-ajax 
       id="req-restart-game" 
-      method="get"
+      method="put"
       url="/api/v1/game/restartGame"
       on-response="_handleRestartGame" 
       on-error="_handleNetworkError">
     </iron-ajax>
     <iron-ajax 
       id="req-toggle-play-game" 
-      method="get"
+      method="put"
       url="/api/v1/game/togglePlay"
+      content-type="application/json"
       on-response="_handleTogglePlay" 
       on-error="_handleNetworkError">
   </iron-ajax>
     <iron-ajax 
       id="req-quit-game" 
-      method="get"
+      method="put"
       url="/api/v1/game/quitGame"
       on-response="_handleQuitGame" 
       on-error="_handleNetworkError">
@@ -214,8 +217,6 @@
       },
 
       _startGame: function() {
-        console.log("starting game");
-        console.log("starting time");
         this._startTime();
         // this._startSocket();
       },
@@ -281,6 +282,7 @@
       */ 
        _togglePlayGame: function() {
         let request = document.getElementById("req-toggle-play-game");
+        request.body = {"gamePaused": !this.gamePaused};
         request.generateRequest();
       },
       
@@ -301,7 +303,7 @@
 
       _handleTogglePlay: function(data) {
         this.set("gameObject", data.detail.response.game);
-        this.set("gamePaused", data.detail.response.game.gamePaused);
+        this.set("gamePaused", data.detail.response.game.gamePaused.gamePaused);
         var pausePlay = document.getElementById("pause-play");
         if (this.gamePaused) {
           this.set("playPauseIcon", "fa-play");
@@ -320,7 +322,7 @@
         let game = state.game;
         this.set("gameObject", game);
         this.set("gameObjectReceived", true);
-        if (!game.gamePaused) {
+        if (!this.gamePaused) {
           let seconds = this.gameObject.timer.seconds;
           let minutes = this.gameObject.timer.minutes;
           seconds++;
@@ -348,6 +350,8 @@
        */    
        _handleRestartGame: function(data) {
         this.set("gameObject", data.detail.response.game);
+        this.set("gamePaused", false);
+        this.set("playPauseIcon", "fa-pause");
         this.set("gameObjectReceived", true);
       },
 
@@ -367,6 +371,18 @@
           this.set("gameObjectReceived", true);
           this._loadPageContent();
           this._checkGameState(data.detail.response.game);
+      },
+
+      _handleOpenModal: function() {
+        this.set("gamePaused", false);
+        this.set("playPauseIcon", "fa-play");
+        this._togglePlayGame();
+      },
+
+      _handleCloseModal: function() {
+        this.set("gamePaused", true);
+        this.set("playPauseIcon", "fa-pause");
+        this._togglePlayGame();
       },
 
       _handleStartSocketRequest: function() {
@@ -401,7 +417,16 @@
             }
           });
         }
+      },
+
+      attached: function() {
+        _this = this;
+        window.addEventListener("cancel-changes", function(evt) {
+          console.log("here");
+          _this._handleCloseModal();
+        });
       }
+
     });
   </script>
 </dom-module>

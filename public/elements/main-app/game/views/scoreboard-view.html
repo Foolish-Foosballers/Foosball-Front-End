@@ -72,7 +72,7 @@
               </div>
               <div id="menu--options">
                   <a id="button--restart-game" on-tap="_restartGame" class="game-option"><i class="fa fa-repeat fa-3x" aria-hidden="true"></i></a>
-                  <a id="pause-play" class="game-option"><i class="fa fa-pause fa-3x" aria-hidden="true"></i></a>
+                  <a id="pause-play" on-tap="_togglePlayGame" class="game-option"><i class$="fa {{playPauseIcon}} fa-3x" aria-hidden="true"></i></a>
                   <form id="quit--form" action="/" class="game-option">
                     <a id="button--quit-game" on-tap="_quitGame" class="game-option"><i class="fa fa-sign-out fa-3x" aria-hidden="true"></i></a>
                   </form>
@@ -149,6 +149,13 @@
       on-error="_handleNetworkError">
     </iron-ajax>
     <iron-ajax 
+      id="req-toggle-play-game" 
+      method="get"
+      url="/api/v1/game/togglePlay"
+      on-response="_handleTogglePlay" 
+      on-error="_handleNetworkError">
+  </iron-ajax>
+    <iron-ajax 
       id="req-quit-game" 
       method="get"
       url="/api/v1/game/quitGame"
@@ -201,7 +208,9 @@
 
         gameOver: { type: Boolean, value: false},
 
-        owner: { type: Boolean, value: false}
+        owner: { type: Boolean, value: false},
+
+        playPauseIcon: {type: String, value: "fa-pause"}
       },
 
       _startGame: function() {
@@ -239,7 +248,7 @@
       },
 
       _startTime: function() {
-        if(!this.gameObject.gamePaused && !this.gameOver) {
+        if(!this.gameOver) {
           let request = document.getElementById("req-read-game-state");
           request.generateRequest();
 
@@ -266,6 +275,14 @@
         let request = document.getElementById("req-restart-game");
         request.generateRequest();
       },
+
+      /**
+       * Send request to pause game
+      */ 
+       _togglePlayGame: function() {
+        let request = document.getElementById("req-toggle-play-game");
+        request.generateRequest();
+      },
       
       /**
        * Send request to quit game
@@ -282,6 +299,17 @@
         location.reload();
       },
 
+      _handleTogglePlay: function(data) {
+        this.set("gameObject", data.detail.response.game);
+        this.set("gamePaused", data.detail.response.game.gamePaused);
+        var pausePlay = document.getElementById("pause-play");
+        if (this.gamePaused) {
+          this.set("playPauseIcon", "fa-play");
+        } else {
+          this.set("playPauseIcon", "fa-pause");
+        }
+      },
+
       /**
        * Get and set the gameObject after timer has been updated
        * 
@@ -292,24 +320,20 @@
         let game = state.game;
         this.set("gameObject", game);
         this.set("gameObjectReceived", true);
-        console.log(this.gameObject.timer);
-
-        let seconds = this.gameObject.timer.seconds;
+        if (!game.gamePaused) {
+          let seconds = this.gameObject.timer.seconds;
           let minutes = this.gameObject.timer.minutes;
           seconds++;
 
-          if (seconds == 60){
-            minutes++;
-            seconds = 0;
-          }
+            if (seconds == 60){
+              minutes++;
+              seconds = 0;
+            }
 
-          // Format the time
-          this.set("gameObject.timer.minutes", this._formatTime(minutes));
-          this.set("gameObject.timer.seconds", this._formatTime(seconds));
-          console.log(this.gameObject.timer);
-          // If the game is not paused, update the time
-          console.log("updated time");
-
+            // Format the time
+            this.set("gameObject.timer.minutes", this._formatTime(minutes));
+            this.set("gameObject.timer.seconds", this._formatTime(seconds));
+        }
           if (this.owner) {
             let request = document.getElementById("req-update-timer");
             request.body = {"game":this.gameObject};
@@ -333,13 +357,10 @@
        * @param data is the response body received from the server
        */    
        _handleGetGameObj: function(data) {
-         console.log("handling game obj");
          if (data.detail.response.game.activated) {
-           console.log("not the owner");
            this.set("owner", false);
          }
          else {
-           console.log("the owner");
            this.set("owner", true);
          }
           this.set("gameObject", data.detail.response.game);

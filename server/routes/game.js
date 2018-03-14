@@ -46,21 +46,19 @@ router.get(['/gameInProgress'], function(req, res) {
   res.send({gameInProgress: gameObj.game.gameInProgress});
 });
 
-router.get(['/updateRankings'], function(req, res) {
-  var url = "http://foosball-data-service.herokuapp.com/games"
-  console.log(url);
+router.get(['/rankings'], function(req, res) {
+  var url = "http://foosball-data-service.herokuapp.com/rankings"
   request.get({
     url: url,
     method: "GET"
   }, function(error, response, body) {
-    console.log("got");
-    console.log(body);
-
-    // ERRORR handling here
+    if (error) {
+      console.log(error);
+    }
+    else {
+      res.json({status: 200, rankings: body})
+    }
   });	
-  console.log("done");
-  // console.log(res);
-  res.json({status: 200})
 })
 
 router.get(['/gameState'], function(req, res) {
@@ -71,7 +69,6 @@ router.get(['/gameState'], function(req, res) {
     res.json({status: 200, state: data});
   });
 })
-
 
 
 // ////////////////////////////////////////////////////////////////////////
@@ -198,6 +195,33 @@ router.put(['/quitGame'], function(req, res) {
     }
   });
 });
+
+router.put(['/player'], function(req, res) {
+  var targetUser = req.body.username;
+  var url = "http://foosball-data-service.herokuapp.com/players/" + targetUser
+  request.get({
+    url: url,
+    method: "GET"
+  }, function(error, response, body) {
+    if (error) {
+      console.log(error);
+    }
+    else {
+      if (response.statusCode == 200) {
+        res.json({status: 200, player: body})
+      }
+      else {
+        if (response.statusCode == 404) {
+          res.json({status: 404, reason: "Player not in database"})
+        }
+        else {
+          res.json({status: 404, reason: "Unknown error"})
+        }
+      }
+    }
+  });	
+
+})
 
 // TODO
 router.put(['/numPlayers'], function(req, res) { 

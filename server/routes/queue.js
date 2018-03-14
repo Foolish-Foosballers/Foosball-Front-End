@@ -18,8 +18,6 @@ var node_env = process.env.node_env || 'development';
 // ////////////////////////////////////////////////////////////////////////
 
 router.get(['/startQueue'], function(req, res) {
-    console.log("works");
-    console.log(gameObj);
     if (gameObj.game.gameInProgress) {
         establishConnection();
         console.log("establishing");

@@ -175,7 +175,7 @@
   <iron-ajax
     id="req-update-rankings"
     method="get"
-    url="/api/v1/game/updateRankings"
+    url="/api/v1/game/rankings"
     on-response="_logRankings"
     on-error="handleNetworkError">
   </iron-ajax>
@@ -235,7 +235,7 @@
       },
 
       _logRankings: function(data) {
-        console.log(data);
+        console.log(data.detail.response.rankings);
       },
 
       _checkGameState: function(game) {

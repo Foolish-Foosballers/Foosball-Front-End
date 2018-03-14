@@ -100,7 +100,7 @@
             </template>
       
             <!-- Play game button -->
-            <button class="btn btn--primary" on-tap="_playGame">Play Game</button>
+            <button class="btn btn--primary" on-tap="_validateForm">Play Game</button>
           </div>
         </div>
       </template>   
@@ -123,6 +123,15 @@
       content-type="application/json"
       on-response="_handlePutGameObj" 
       on-error="_handleNetworkError">
+    </iron-ajax>
+    <iron-ajax
+      id="req-get-player"
+      method="put"
+      url="/api/v1/game/player"
+      content-type="application/json"
+      handle-as="json"
+      on-response="_playGame"
+      on-error="_handleInvalidUser">
     </iron-ajax>
   </template>
   <script>
@@ -232,6 +241,16 @@
         gameObject: {
           type: JSON,
           value: {}
+        },
+
+        numValidUsers: {
+          type: Number,
+          value: 0
+        },
+
+        formValid: {
+          type: Boolean,
+          value: false
         }
       },
 
@@ -335,18 +354,47 @@
         this.set("pageIsLoading", false);
       },
 
+
+      /**
+       * If the user information is invalid notify the user
+       * 
+       * @param data is the the response body received from the server
+       */
+       _handleInvalidUser: function(data) {
+        this.set("pageHasError", true);
+        this.set("error", data.detail.error + ' - ' + data.detail.request.baseURI);
+        this.set("pageIsLoading", false);
+      },
+
+      /**
+       * Get and set the gameObject
+       * 
+       * @param data is the response body received from the server
+       */    
+       _handleGetGameObj: function(data) {
+        this.set("gameObject", data.detail.response.game);
+        this.set("gameObjectReceived", true);
+        this._loadPageContent();
+      },
+
       /**
        * Play a new Foosball game with the information described in the form.
        */
-      _playGame: function() {
-        if (this._validateForm() !== false) {
+      _playGame: function(data) {
+        if (data.detail.response.status == 200) {
+          this.set('numValidUsers', this.numValidUsers + 1);
+        }
+        else {
+          this.set('numValidUsers', 0);
+        }
+        if (this.formValid && this.numValidUsers == this.selectedNumberOfPlayersValue) {
           this.set("gameObject.gameInProgress", true);
           let request = document.getElementById("req-put-gameObj");
           request.body = {"game":this.gameObject};
           request.generateRequest();
         }
       },
-
+ 
       /**
        * Make sure all of the forms data is valid.
        * 
@@ -369,7 +417,9 @@
           }
         }
 
-        return isValidForm;
+        if (isValidForm !== false) {
+          this.set('formValid', true);
+        }
       },
 
       /**
@@ -385,6 +435,9 @@
           el.classList.add("validation-error");
           isValidInput = false;
         }
+        let request = document.getElementById("req-get-player");
+        request.body = {"username": el.value};
+        request.generateRequest();  
         return isValidInput;
       }
     });
